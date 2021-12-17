@@ -1,0 +1,14 @@
+{
+  "seed_server": {
+    "ip": "0",
+    "port": 0
+  },
+  "host": {
+    "server_port": 9150,
+    "client_port": 9151
+  },
+  "ring": {
+    "bits": 8
+  }
+}
+
