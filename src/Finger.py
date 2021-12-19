@@ -1,9 +1,11 @@
 import utils
 
+
 class Finger:
 	hash_func = None
 	params = None
 
-	def __init__(self, addr):
+	def __init__(self, addr, node_id=None):
 		self.addr = addr
-		self.node_id = utils.get_id(addr[0] + str(addr[1]), Finger.hash_func, Finger.params)
+		if not node_id:
+			self.node_id = utils.get_id(addr[0] + str(addr[1]), Finger.hash_func, Finger.params)
