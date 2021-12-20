@@ -1,3 +1,4 @@
+import utils
 from RequestHandler import RequestHandler
 from Finger import Finger
 
@@ -84,9 +85,10 @@ def get_closest_preceding_finger(n, body):
 
 
 # Functions that write to node object n
-def update_predecessor(event_queue, body):
+def update_predecessor(n, event_queue, body):
     """
     Returns response to update_predecessor remote procedure call
+    :param n: node on which to call update_predecessor
     :param event_queue: queue shared between threads
     :param body: body of request
     :return: string of response
@@ -94,7 +96,8 @@ def update_predecessor(event_queue, body):
     # function to be run by main thread to update data
     def update(node):
         node.predecessor = Finger((body["ip"], body["port"]), body["node_id"])
-    event_queue.put(update)
+    if not n.predecessor or utils.is_between_clockwise(body["node_id"], n.predecessor.node_id, n.node_id):
+        event_queue.put(update)
 
     header = {"status": STATUS_OK}
     body = {}

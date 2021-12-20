@@ -1,5 +1,8 @@
 import math
 
+"""
+File including various utility functions
+"""
 
 def get_id(key, hash_func, params):
     """
@@ -17,3 +20,17 @@ def get_id(key, hash_func, params):
     res_id = int.from_bytes(hash_func(key).digest()[-trunc_size:], "big")
 
     return res_id % 2**ring_size
+
+
+def is_between_clockwise(x, lower, upper, inclusive_upper = False):
+    """
+    Checks if x is between lower and upper in a circle, while moving clockwise from lower to upper
+    Lower is exclusive
+    :param x: the value to check for
+    :param lower: lower bound
+    :param upper: upper bound
+    :param inclusive_upper: determines if upper should be inclusive or not
+    :return: True or False
+    """
+    return (lower < upper and lower < x  and (x <= upper if inclusive_upper else x < upper)) or \
+           (upper <= lower and ((x <= upper if inclusive_upper else x < upper) or x > lower))

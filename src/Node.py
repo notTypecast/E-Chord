@@ -20,40 +20,53 @@ class Node:
     """
     Defines an E-Chord Node
     """
+
+    params = None
+
     def __init__(self):
         """
         Initializes a new node
         """
         # get configuration settings from params.json
         with open("config/params.json") as f:
-            self.params = json.load(f)
-            Finger.params = self.params
+            Node.params = json.load(f)
+            Finger.params = Node.params
 
         # set address for server and client
-        self.SERVER_ADDR = (socket.gethostname(), self.params["host"]["server_port"])
-        self.CLIENT_ADDR = (socket.gethostname(), self.params["host"]["client_port"])
+        self.SERVER_ADDR = (socket.gethostname(), Node.params["host"]["server_port"])
+        self.CLIENT_ADDR = (socket.gethostname(), Node.params["host"]["client_port"])
 
         # initialize
-        self.finger_table = [Finger(self.SERVER_ADDR)]*self.params["ring"]["bits"]
+        self.finger_table = [Finger(self.SERVER_ADDR)]*Node.params["ring"]["bits"]
 
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # ID will be SHA-1(IP+port)
-        self.node_id = utils.get_id(self.SERVER_ADDR[0] + str(self.SERVER_ADDR[1]), hash_func, self.params)
+        self.node_id = utils.get_id(self.SERVER_ADDR[0] + str(self.SERVER_ADDR[1]), hash_func, Node.params)
 
-        # get initial node from seed server
-        seed_addr = self.get_seed()
+        while True:
+            # get initial node from seed server
+            data = self.get_seed()
 
-        # Join ring
-        # if at least one other node exists
-        if seed_addr:
-            self.predecessor = None
-            response = Node.ask_peer(seed_addr, "find_successor", {"for_id", self.node_id})
-            self.finger_table[0] = Finger((response["body"]["ip"], response["body"]["ip"]))
+            # Join ring
+            # if at least one other node exists
+            if data["header"]["status"] in range(200, 300):
+                self.predecessor = None
+                response = Node.ask_peer((data["body"]["ip"], data["body"]["port"]),
+                                         "find_successor", {"for_id", self.node_id})
+                if not response:
+                    Node.ask_peer((Node.params["seed_server"]["ip"], Node.params["seed_server"]["port"]),
+                                  "dead_node", {"ip": data["body"]["ip"], "port": data["body"]["port"]})
+                    continue
 
-        # if this is the first node
-        else:
-            self.predecessor = Finger(self.SERVER_ADDR)
+                self.finger_table[0] = Finger((response["body"]["ip"], response["body"]["ip"]),
+                                              response["body"]["node_id"])
+
+            # if this is the first node
+            else:
+                self.predecessor = Finger(self.SERVER_ADDR)
+
+            break
 
         self.listen()
 
@@ -62,12 +75,20 @@ class Node:
         Stabilize ring by updating successor or successor's predecessor
         :return: None
         """
+        # NOTE: successor node failure will lead to error
         response = Node.ask_peer(self.finger_table[0].addr, "get_predecessor", {})
         status_ok = response["header"]["status"] in range(200, 300)
 
-        if status_ok and self.node_id < response["body"]["node_id"] < self.finger_table[0].node_id:
-            self.finger_table[0] = Finger((response["body"]["ip"], response["body"]["port"]))
-        else:
+        if status_ok:
+            # if successor has this node as predecessor
+            if self.node_id == response["body"]["node_id"]:
+                return
+            # if new node joined between this node and its successor
+            if utils.is_between_clockwise(response["body"]["node_id"], self.node_id, self.finger_table[0].node_id):
+                self.finger_table[0] = Finger((response["body"]["ip"], response["body"]["port"]),
+                                              response["body"]["node_id"])
+
+            # update successor's predecessor to be this node
             Node.ask_peer(self.finger_table[0].addr, "update_predecessor", {"ip": self.SERVER_ADDR[0],
                                                                             "port": self.SERVER_ADDR[1],
                                                                             "node_id": self.node_id})
@@ -77,7 +98,7 @@ class Node:
         Fixes a random finger of the finger table
         :return: None
         """
-        i = randint(1, self.params["ring"]["bits"])
+        i = randint(1, Node.params["ring"]["bits"])
         succ = self.find_successor(self.node_id + 2**i)
         self.finger_table[i] = Finger((succ[0], succ[1]), succ[2])
 
@@ -87,6 +108,10 @@ class Node:
         :param key_id: the ID
         :return: tuple of (ID, port)
         """
+        # if this is the only node in the network
+        if self.finger_table[0].node_id == self.node_id:
+            return self.SERVER_ADDR[0], self.SERVER_ADDR[1], self.node_id
+
         current_node = self.find_predecessor(key_id)
         response = Node.ask_peer(current_node, "get_successor", {})
         return response["body"]["ip"], response["body"]["port"], response["body"]["node_id"]
@@ -100,15 +125,13 @@ class Node:
         current_node = self
         successor_id = self.finger_table[0].node_id
 
-        while current_node.node_id < key_id <= successor_id:
-            if current_node.addr == self.SERVER_ADDR:
-                current_node = self.closest_preceding_finger(key_id)
-            else:
-                # TODO maybe check for status
-                response = Node.ask_peer(current_node.addr, "get_closest_preceding_finger", {"for_key_id": key_id})
-                current_node = Finger((response["body"]["ip"], response["body"]["port"]), response["body"]["node_id"])
-                response = Node.ask_peer((current_node.addr[0], current_node.addr[1]), "get_successor", {})
-                successor_id = response["body"]["node_id"]
+        # while key_id is not between node_id and successor_id (while moving clockwise)
+        while not utils.is_between_clockwise(key_id, current_node.node_id, successor_id, inclusive_upper=True):
+            # TODO maybe check for status
+            response = Node.ask_peer(current_node.addr, "get_closest_preceding_finger", {"for_key_id": key_id})
+            current_node = Finger((response["body"]["ip"], response["body"]["port"]), response["body"]["node_id"])
+            response = Node.ask_peer((current_node.addr[0], current_node.addr[1]), "get_successor", {})
+            successor_id = response["body"]["node_id"]
 
         return current_node.addr
 
@@ -118,8 +141,8 @@ class Node:
         :param key_id: the ID
         :return: Finger pointing to the closest preceding Node, or self if self is the closest preceding Node
         """
-        for i in range(0, self.params["ring"]["bits"], -1):
-            if self.node_id < self.finger_table[i].node_id < key_id:
+        for i in range(Node.params["ring"]["bits"], 0, -1):
+            if utils.is_between_clockwise(self.finger_table[i].node_id, self.node_id, key_id):
                 return self.finger_table[i]
         return Finger(self.SERVER_ADDR, self.node_id)
 
@@ -136,7 +159,11 @@ class Node:
         request_msg = RequestHandler.create_request({"type": req_type}, body_dict)
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.connect(peer_addr)
+            client.settimeout(Node.params["net"]["timeout"])
+            try:
+                client.connect(peer_addr)
+            except (socket.error, socket.timeout):
+                return None
             client.sendall(request_msg.encode())
             data = client.recv(DATA_SIZE).decode()
 
@@ -148,12 +175,22 @@ class Node:
         :return: tuple of (IP, port)
         """
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.connect((self.params["seed_server"]["ip"], self.params["seed_server"]["port"]))
-            client.sendall(RequestHandler.create_request("add_node",
+            client.settimeout(Node.params["net"]["timeout"])
+            for _ in range(Node.params["seed_server"]["attempt_limit"]):
+                try:
+                    client.connect((Node.params["seed_server"]["ip"], Node.params["seed_server"]["port"]))
+                    break
+                except (socket.error, socket.timeout) as err:
+                    # TODO log
+                    pass
+            else:
+                # TODO log
+                exit(1)
+            client.sendall(RequestHandler.create_request({"type": "add_node"},
                                                          {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]}))
-            data = json.loads(client.recv(DATA_SIZE).decode())["body"]
+            data = json.loads(client.recv(DATA_SIZE).decode())
 
-        return data["ip"], data["port"]
+        return data
 
     def listen(self):
         """
@@ -174,7 +211,7 @@ class Node:
 
         # initialize timer for stabilization of node
         stabilizer = threading.Thread(target=self.stabilize_timer,
-                                      args=(event_queue, self.params["ring"]["stabilize_delay"]))
+                                      args=(event_queue, Node.params["ring"]["stabilize_delay"]))
         stabilizer.daemon = True
 
         connection_acceptor.start()
@@ -184,18 +221,18 @@ class Node:
             # wait until event_queue is not empty, then pop
             data = event_queue.get()
 
-            # 0 is used for stabilize event
+            # data == 0 is used for stabilize event
             if not data:
                 self.stabilize()
                 self.fix_fingers()
                 continue
 
-            # call function of the event_queue to update state in main thread
+            # if data is function, call it to update state in main thread
             if callable(data):
                 data(self)
                 continue
 
-            # for every connection, start new thread to handle it
+            # else, data is connection, so start new thread to handle it
             connection_handler = threading.Thread(target=self.handle_connection, args=(self, event_queue, data))
             connection_handler.start()
 
@@ -219,6 +256,8 @@ class Node:
         """
         Handles existing connection until it closes
         :param conn_details: connection details (connection, address)
+        :param node: the node on which to call the method
+        :param event_queue: shared queue
         :return: None
         """
         connection, address = conn_details
@@ -232,7 +271,9 @@ class Node:
             data = json.loads(data)
 
             # select RPC handler according to RPC type
-            REQUEST_MAP[data["type"]](node, event_queue, data["body"])
+            response = REQUEST_MAP[data["type"]](node, event_queue, data["body"])
+
+            connection.sendall(response.encode())
 
     @staticmethod
     def stabilize_timer(event_queue, delay):
