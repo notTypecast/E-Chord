@@ -11,7 +11,7 @@ class RequestHandler:
     def create_request(header_dict, body_dict):
         """
         Creates request from passed header and body
-        :param header: string of request type
+        :param header_dict: dictionary of header
         :param body_dict: dictionary of body
         :return:
         """

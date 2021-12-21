@@ -9,3 +9,6 @@ class Finger:
 		self.addr = addr
 		if not node_id:
 			self.node_id = utils.get_id(addr[0] + str(addr[1]), Finger.hash_func, Finger.params)
+
+	def __eq__(self, other):
+		return self.addr == other.addr

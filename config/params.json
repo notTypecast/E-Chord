@@ -10,7 +10,8 @@
   },
   "ring": {
     "bits": 8,
-    "stabilize_delay": 10
+    "successor_list_length": 4,
+    "stabilize_delay": 5
   },
   "net": {
     "timeout": 15

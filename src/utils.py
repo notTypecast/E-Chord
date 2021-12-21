@@ -1,8 +1,10 @@
 import math
+from Finger import Finger
 
 """
 File including various utility functions
 """
+
 
 def get_id(key, hash_func, params):
     """
@@ -22,7 +24,7 @@ def get_id(key, hash_func, params):
     return res_id % 2**ring_size
 
 
-def is_between_clockwise(x, lower, upper, inclusive_upper = False):
+def is_between_clockwise(x, lower, upper, inclusive_upper=False):
     """
     Checks if x is between lower and upper in a circle, while moving clockwise from lower to upper
     Lower is exclusive
@@ -34,3 +36,20 @@ def is_between_clockwise(x, lower, upper, inclusive_upper = False):
     """
     return (lower < upper and lower < x  and (x <= upper if inclusive_upper else x < upper)) or \
            (upper <= lower and ((x <= upper if inclusive_upper else x < upper) or x > lower))
+
+
+def place_in_successor_list(current_list, response_body, lower):
+    """
+    Places node with node_id found in response_body in current_list
+    :param current_list: the list to place the new node in
+    :param response_body: the dictionary containing ip, port and node_id of node
+    :param lower: lower bound for check
+    :return: None
+    """
+    new_node_id = response_body["node_id"]
+
+    for i, succ in enumerate(current_list):
+        if succ.node_id == new_node_id:
+            break
+        if is_between_clockwise(new_node_id, lower, succ.node_id):
+            current_list.insert(i, Finger((response_body["ip"], response_body["port"]), new_node_id))

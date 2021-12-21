@@ -84,6 +84,23 @@ def get_closest_preceding_finger(n, body):
     return RequestHandler.create_request(header, body)
 
 
+def get_prev_successor_list(n):
+    """
+    Returns successor list for previous node
+    Successor list will contain n's successor as first entry, and all nodes in n's successor list up to r-1
+    :param n:
+    :return:
+    """
+    header = {"status": STATUS_OK, "type": "prev_successor_list"}
+    prev_successor_list = [{"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1],
+                            "node_id": n.finger_table[0].node_id}]
+    for succ in n.successor_list[:-1]:
+        prev_successor_list.append({"ip": succ.addr[0], "port": succ.addr[1], "node_id": succ.node_id})
+    body = {"successor_list": prev_successor_list}
+
+    return RequestHandler.create_request(header, body)
+
+
 # Functions that write to node object n
 def update_predecessor(n, event_queue, body):
     """
