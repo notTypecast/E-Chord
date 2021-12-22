@@ -1,4 +1,5 @@
 from src import utils
+from src.utils import log
 from src.Finger import Finger
 
 """

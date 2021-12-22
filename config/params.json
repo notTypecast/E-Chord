@@ -14,7 +14,7 @@
     "stabilize_delay": 5
   },
   "net": {
-    "timeout": 15,
+    "timeout": 5,
     "data_size": 1024
   }
 }

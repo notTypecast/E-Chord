@@ -1,10 +1,15 @@
 import math
 import json
+import logging
+from os import environ
 from src.Finger import Finger
 
 """
 File including various utility functions
 """
+
+logging.basicConfig(format="%(asctime)s %(threadName)s-%(levelname)s:%(name)s: %(message)s", level=environ.get("LOGLEVEL", "DEBUG"))
+log = logging.getLogger(__name__)
 
 
 def create_request(header_dict, body_dict):
