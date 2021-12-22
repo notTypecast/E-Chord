@@ -1,6 +1,6 @@
 import math
 import json
-from Finger import Finger
+from src.Finger import Finger
 
 """
 File including various utility functions
@@ -30,7 +30,7 @@ def get_id(key, hash_func, params):
     """
     key = key.encode("utf-8")
 
-    ring_size = params["ring"]["size"]
+    ring_size = params["ring"]["bits"]
     # truncate to necessary number of bytes and get ID
     trunc_size = math.ceil(ring_size/8)
     res_id = int.from_bytes(hash_func(key).digest()[-trunc_size:], "big")

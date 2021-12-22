@@ -1,5 +1,5 @@
-import utils
-from Finger import Finger
+from src import utils
+from src.Finger import Finger
 
 """
 handlers.py
@@ -20,7 +20,9 @@ REQUEST_MAP = {
     "get_predecessor": lambda n, event_queue, body: get_predecessor(n),
     "find_successor": lambda n, event_queue, body: find_successor(n, body),
     "get_closest_preceding_finger": lambda n, event_queue, body: get_closest_preceding_finger(n, body),
-    "update_predecessor": lambda n, event_queue, body: update_predecessor(event_queue, body),
+    "get_prev_successor_list": lambda n, event_queue, body: get_prev_successor_list(n),
+    "poll": lambda n, event_queue, body: poll(),
+    "update_predecessor": lambda n, event_queue, body: update_predecessor(n, event_queue, body)
 }
 
 
@@ -87,8 +89,8 @@ def get_prev_successor_list(n):
     """
     Returns successor list for previous node
     Successor list will contain n's successor as first entry, and all nodes in n's successor list up to r-1
-    :param n:
-    :return:
+    :param n: the node
+    :return: string of response
     """
     header = {"status": STATUS_OK, "type": "prev_successor_list"}
     prev_successor_list = [{"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1],
@@ -98,6 +100,16 @@ def get_prev_successor_list(n):
     body = {"successor_list": prev_successor_list}
 
     return utils.create_request(header, body)
+
+
+def poll():
+    """
+    Reads poll request from seed server, responds with OK
+    :return: string of response
+    """
+    header = {"status": STATUS_OK}
+
+    return utils.create_request(header, {})
 
 
 # Functions that write to node object n

@@ -7,9 +7,9 @@ import threading
 from queue import Queue
 from copy import copy
 # project files
-import utils
-from Finger import Finger
-from handlers import REQUEST_MAP
+from src import utils
+from src.Finger import Finger
+from src.handlers import REQUEST_MAP
 
 hash_func = sha1
 Finger.hash_func = hash_func
@@ -40,6 +40,7 @@ class Node:
         self.successor_list = [None] * Node.params["ring"]["successor_list_length"]
 
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         # ID will be SHA-1(IP+port)
         self.node_id = utils.get_id(self.SERVER_ADDR[0] + str(self.SERVER_ADDR[1]), hash_func, Node.params)
@@ -287,10 +288,10 @@ class Node:
             client.settimeout(Node.params["net"]["timeout"])
             try:
                 client.connect(peer_addr)
+                client.sendall(request_msg.encode())
+                data = client.recv(Node.params["net"]["data_size"]).decode()
             except (socket.error, socket.timeout):
                 return None
-            client.sendall(request_msg.encode())
-            data = client.recv(Node.params["net"]["data_size"]).decode()
 
         return data if not return_json else json.loads(data)
 
@@ -311,9 +312,12 @@ class Node:
             else:
                 # TODO log
                 exit(1)
-            client.sendall(utils.create_request({"type": "add_node"},
-                                                         {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]}))
-            data = json.loads(client.recv(Node.params["net"]["data_size"]).decode())
+            client.sendall(utils.create_request({"type": "add_node"}, {"ip": self.SERVER_ADDR[0],
+                                                                       "port": self.SERVER_ADDR[1]}).encode())
+            try:
+                data = json.loads(client.recv(Node.params["net"]["data_size"]).decode())
+            except socket.timeout:
+                pass
 
         return data
 
@@ -397,7 +401,7 @@ class Node:
             data = json.loads(data)
 
             # select RPC handler according to RPC type
-            response = REQUEST_MAP[data["type"]](node, event_queue, data["body"])
+            response = REQUEST_MAP[data["header"]["type"]](node, event_queue, data["body"])
 
             connection.sendall(response.encode())
 

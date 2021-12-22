@@ -1,7 +1,7 @@
 {
   "seed_server": {
-    "ip": "0",
-    "port": 0,
+    "ip": "",
+    "port": 6969,
     "attempt_limit": 4
   },
   "host": {
