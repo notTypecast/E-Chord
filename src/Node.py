@@ -8,13 +8,11 @@ from queue import Queue
 from copy import copy
 # project files
 import utils
-from RequestHandler import RequestHandler
 from Finger import Finger
 from handlers import REQUEST_MAP
 
 hash_func = sha1
 Finger.hash_func = hash_func
-DATA_SIZE = 1024
 
 
 class Node:
@@ -283,7 +281,7 @@ class Node:
         :param return_json: determines if json or string response should be returned
         :return: string response of peer
         """
-        request_msg = RequestHandler.create_request({"type": req_type}, body_dict)
+        request_msg = utils.create_request({"type": req_type}, body_dict)
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
             client.settimeout(Node.params["net"]["timeout"])
@@ -292,7 +290,7 @@ class Node:
             except (socket.error, socket.timeout):
                 return None
             client.sendall(request_msg.encode())
-            data = client.recv(DATA_SIZE).decode()
+            data = client.recv(Node.params["net"]["data_size"]).decode()
 
         return data if not return_json else json.loads(data)
 
@@ -313,9 +311,9 @@ class Node:
             else:
                 # TODO log
                 exit(1)
-            client.sendall(RequestHandler.create_request({"type": "add_node"},
+            client.sendall(utils.create_request({"type": "add_node"},
                                                          {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]}))
-            data = json.loads(client.recv(DATA_SIZE).decode())
+            data = json.loads(client.recv(Node.params["net"]["data_size"]).decode())
 
         return data
 
@@ -391,7 +389,7 @@ class Node:
         connection, address = conn_details
 
         with connection:
-            data = connection.recv(DATA_SIZE).decode()
+            data = connection.recv(Node.params["net"]["data_size"]).decode()
 
             if not data:
                 return

@@ -1,5 +1,4 @@
 import utils
-from RequestHandler import RequestHandler
 from Finger import Finger
 
 """
@@ -35,7 +34,7 @@ def get_successor(n):
     header = {"status": STATUS_OK, "type": "successor"}
     body = {"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1], "node_id": n.finger_table[0].node_id}
 
-    return RequestHandler.create_request(header, body)
+    return utils.create_request(header, body)
 
 
 def get_predecessor(n):
@@ -52,7 +51,7 @@ def get_predecessor(n):
     else:
         header["status"] = STATUS_NOT_FOUND
 
-    return RequestHandler.create_request(header, body)
+    return utils.create_request(header, body)
 
 
 def find_successor(n, body):
@@ -66,7 +65,7 @@ def find_successor(n, body):
     header = {"status": STATUS_OK, "type": "successor"}
     body = {"ip": successor_data[0], "port": successor_data[1], "node_id": successor_data[2]}
 
-    return RequestHandler.create_request(header, body)
+    return utils.create_request(header, body)
 
 
 def get_closest_preceding_finger(n, body):
@@ -81,7 +80,7 @@ def get_closest_preceding_finger(n, body):
     header = {"status": STATUS_OK, "type": "closest_preceding_finger"}
     body = {"ip": finger.addr[0], "port": finger.addr[1], "node_id": finger.node_id}
 
-    return RequestHandler.create_request(header, body)
+    return utils.create_request(header, body)
 
 
 def get_prev_successor_list(n):
@@ -98,7 +97,7 @@ def get_prev_successor_list(n):
         prev_successor_list.append({"ip": succ.addr[0], "port": succ.addr[1], "node_id": succ.node_id})
     body = {"successor_list": prev_successor_list}
 
-    return RequestHandler.create_request(header, body)
+    return utils.create_request(header, body)
 
 
 # Functions that write to node object n
@@ -118,4 +117,4 @@ def update_predecessor(n, event_queue, body):
 
     header = {"status": STATUS_OK}
     body = {}
-    return RequestHandler.create_request(header, body)
+    return utils.create_request(header, body)
