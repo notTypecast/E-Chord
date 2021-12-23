@@ -21,36 +21,28 @@ class Node:
     Defines an E-Chord Node
     """
 
-    params = None
-
     def __init__(self, port):
         """
         Initializes a new node
         """
-        # get configuration settings from params.json
-        with open("config/params.json") as f:
-            Node.params = json.load(f)
-            Finger.params = Node.params
-
-        log.info("Loaded params")
-
         # set address for server and client
         self.SERVER_ADDR = ("", port)
 
         # initialize finger table and successor list
-        self.finger_table = [Finger(self.SERVER_ADDR)] * Node.params["ring"]["bits"]
-        self.successor_list = [None] * Node.params["ring"]["successor_list_length"]
+        self.finger_table = [Finger(self.SERVER_ADDR)] * utils.params["ring"]["bits"]
+        self.successor_list = [None] * utils.params["ring"]["successor_list_length"]
 
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         # ID will be SHA-1(IP+port)
-        self.node_id = utils.get_id(self.SERVER_ADDR[0] + str(self.SERVER_ADDR[1]), hash_func, Node.params)
+        self.node_id = utils.get_id(self.SERVER_ADDR[0] + str(self.SERVER_ADDR[1]), hash_func, utils.params)
         log.debug(f"Initialized with node ID: {self.node_id}")
 
         while True:
             # get initial node from seed server
             data = self.get_seed()
+            log.debug("Asked seed server")
 
             # Join ring
             # if at least one other node exists
@@ -66,12 +58,12 @@ class Node:
                                              "find_successor", {"for_id": self.node_id})
                     if not response:
                         # tell seed server that seed node has died
-                        Node.ask_peer((Node.params["seed_server"]["ip"], Node.params["seed_server"]["port"]),
+                        Node.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
                                       "dead_node", {"ip": data["body"]["ip"], "port": data["body"]["port"]})
                         seed_dead = True
                         break
 
-                    self.finger_table[0] = Finger((response["body"]["ip"], response["body"]["ip"]),
+                    self.finger_table[0] = Finger((response["body"]["ip"], response["body"]["port"]),
                                                   response["body"]["node_id"])
                     log.info("Got successor")
                     log.debug(f"Successor address: {self.finger_table[0].addr} with node ID: "
@@ -79,12 +71,12 @@ class Node:
 
                     # initialize successor list, or get new successor if successor is dead
                     if self.init_successor_list():
-                        log.info("Successfully initialized successor list")
+                        log.info("Initialized successor list")
                         break
 
                     # if successor has died, wait for other nodes to stabilize before asking for new successor
                     log.info("Waiting for stabilization")
-                    time.sleep(Node.params["ring"]["stabilize_delay"])
+                    time.sleep(utils.params["ring"]["stabilize_delay"])
 
                 # if seed node is dead, reseed
                 if seed_dead:
@@ -119,7 +111,8 @@ class Node:
         # populating this node's successor list
         for i, successor in enumerate(response["body"]["successor_list"]):
             self.successor_list[i] = Finger((successor["ip"], successor["port"]), successor["node_id"])
-        log.info("Successor list initialized successfully")
+
+        return True
 
     def stabilize(self):
         """
@@ -177,9 +170,9 @@ class Node:
         """
         # TODO maybe priority here (and in successor list?)
         log.info("Fixing a finger...")
-        i = random.randint(1, Node.params["ring"]["bits"])
+        i = random.randint(1, utils.params["ring"]["bits"] - 1)
         log.debug(f"Picked finger {i}")
-        succ = self.find_successor(self.node_id + 2 ** i)
+        succ = self.find_successor((self.node_id + 2 ** i) % 2**utils.params["ring"]["bits"])
         self.finger_table[i] = Finger((succ[0], succ[1]), succ[2])
 
     def fix_successor_list(self):
@@ -217,7 +210,7 @@ class Node:
             elif node_index == len(self.successor_list) - 1:
                 log.debug("Successor picked randomly was last in list")
                 # if successor list is at max capacity, do nothing
-                if len(self.successor_list) == Node.params["ring"]["successor_list_length"]:
+                if len(self.successor_list) == utils.params["ring"]["successor_list_length"]:
                     log.debug("Successor list is at max capacity")
                     return
                 # else, append successor returned to successor list
@@ -261,7 +254,7 @@ class Node:
         for node in dead_nodes:
             self.successor_list.remove(node)
 
-        self.successor_list = self.successor_list[:Node.params["ring"]["successor_list_length"]]
+        self.successor_list = self.successor_list[:utils.params["ring"]["successor_list_length"]]
         log.info("Updated successor list")
 
     def find_successor(self, key_id):
@@ -286,7 +279,7 @@ class Node:
         :return: tuple of (ID, port)
         """
         log.debug(f"Finding predecessor for ID: {key_id}")
-        current_node = self
+        current_node = Finger(self.SERVER_ADDR, self.node_id)
         successor_id = self.finger_table[0].node_id
 
         # while key_id is not between node_id and successor_id (while moving clockwise)
@@ -308,7 +301,7 @@ class Node:
         """
         # TODO request finger found before returning to ensure its alive, don't return it if it isn't
         log.debug(f"Finding closest preceding finger for ID: {key_id}")
-        for i in range(Node.params["ring"]["bits"], 0, -1):
+        for i in range(utils.params["ring"]["bits"] - 1, -1, -1):
             if utils.is_between_clockwise(self.finger_table[i].node_id, self.node_id, key_id):
                 return self.finger_table[i]
         return Finger(self.SERVER_ADDR, self.node_id)
@@ -324,15 +317,14 @@ class Node:
         :return: string response of peer
         """
         request_msg = utils.create_request({"type": req_type}, body_dict)
-        log.debug("Asking peer")
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
             client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            client.settimeout(Node.params["net"]["timeout"])
+            client.settimeout(utils.params["net"]["timeout"])
             try:
                 client.connect(peer_addr)
                 client.sendall(request_msg.encode())
-                data = client.recv(Node.params["net"]["data_size"]).decode()
+                data = client.recv(utils.params["net"]["data_size"]).decode()
             except (socket.error, socket.timeout) as err:
                 log.error(err)
                 return None
@@ -345,21 +337,21 @@ class Node:
         :return: tuple of (IP, port)
         """
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.settimeout(Node.params["net"]["timeout"])
-            for i in range(Node.params["seed_server"]["attempt_limit"]):
+            client.settimeout(utils.params["net"]["timeout"])
+            for i in range(utils.params["seed_server"]["attempt_limit"]):
                 try:
-                    client.connect((Node.params["seed_server"]["ip"], Node.params["seed_server"]["port"]))
+                    client.connect((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]))
                     break
                 except (socket.error, socket.timeout) as err:
                     log.info(f"Failed to connect to seed server, retrying... "
-                             f"{i + 1}/{Node.params['seed_server']['attempt_limit']}")
+                             f"{i + 1}/{utils.params['seed_server']['attempt_limit']}")
             else:
                 log.critical("Connection to seed failed (attempt limit reached)")
                 exit(1)
             client.sendall(utils.create_request({"type": "add_node"}, {"ip": self.SERVER_ADDR[0],
                                                                        "port": self.SERVER_ADDR[1]}).encode())
             try:
-                data = json.loads(client.recv(Node.params["net"]["data_size"]).decode())
+                data = json.loads(client.recv(utils.params["net"]["data_size"]).decode())
             except socket.timeout:
                 pass
 
@@ -386,7 +378,7 @@ class Node:
 
         # initialize timer for stabilization of node
         stabilizer = threading.Thread(target=self.stabilize_timer,
-                                      args=(event_queue, Node.params["ring"]["stabilize_delay"]))
+                                      args=(event_queue, utils.params["ring"]["stabilize_delay"]))
         stabilizer.name = "Stabilizer"
         stabilizer.daemon = True
 
@@ -443,14 +435,19 @@ class Node:
         connection, address = conn_details
 
         with connection:
-            data = connection.recv(Node.params["net"]["data_size"]).decode()
+            data = connection.recv(utils.params["net"]["data_size"]).decode()
             if not data:
                 return
 
             data = json.loads(data)
 
+            # ensure all expected arguments have been sent
+            for arg in utils.EXPECTED_REQUEST[data["header"]["type"]]:
+                if arg not in data["body"]:
+                    return
+
             # select RPC handler according to RPC type
-            log.info(f"Got RPC call of type: {data['header']['type']}")
+            log.debug(f"Got RPC call of type: {data['header']['type']}")
             response = REQUEST_MAP[data["header"]["type"]](node, event_queue, data["body"])
 
             connection.sendall(response.encode())

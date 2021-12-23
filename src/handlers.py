@@ -34,10 +34,10 @@ def get_successor(n):
     :param n: node whose successor to return
     :return: string of response
     """
-    header = {"status": STATUS_OK, "type": "successor"}
-    body = {"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1], "node_id": n.finger_table[0].node_id}
+    resp_header = {"status": STATUS_OK, "type": "successor"}
+    resp_body = {"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1], "node_id": n.finger_table[0].node_id}
 
-    return utils.create_request(header, body)
+    return utils.create_request(resp_header, resp_body)
 
 
 def get_predecessor(n):
@@ -46,15 +46,15 @@ def get_predecessor(n):
     :param n: node whose predecessor to return
     :return: string of response
     """
-    header = {"type": "predecessor"}
-    body = {}
+    resp_header = {"type": "predecessor"}
+    resp_body = {}
     if n.predecessor:
-        header["status"] = STATUS_OK
-        body = {"ip": n.predecessor.addr[0], "port": n.predecessor.addr[1], "node_id": n.predecessor.node_id}
+        resp_header["status"] = STATUS_OK
+        resp_body = {"ip": n.predecessor.addr[0], "port": n.predecessor.addr[1], "node_id": n.predecessor.node_id}
     else:
-        header["status"] = STATUS_NOT_FOUND
+        resp_header["status"] = STATUS_NOT_FOUND
 
-    return utils.create_request(header, body)
+    return utils.create_request(resp_header, resp_body)
 
 
 def find_successor(n, body):
@@ -65,10 +65,10 @@ def find_successor(n, body):
     :return: string of response
     """
     successor_data = n.find_successor(body["for_id"])
-    header = {"status": STATUS_OK, "type": "successor"}
-    body = {"ip": successor_data[0], "port": successor_data[1], "node_id": successor_data[2]}
+    resp_header = {"status": STATUS_OK, "type": "successor"}
+    resp_body = {"ip": successor_data[0], "port": successor_data[1], "node_id": successor_data[2]}
 
-    return utils.create_request(header, body)
+    return utils.create_request(resp_header, resp_body)
 
 
 def get_closest_preceding_finger(n, body):
@@ -80,10 +80,10 @@ def get_closest_preceding_finger(n, body):
     """
     finger = n.closest_preceding_finger(body["for_key_id"])
 
-    header = {"status": STATUS_OK, "type": "closest_preceding_finger"}
-    body = {"ip": finger.addr[0], "port": finger.addr[1], "node_id": finger.node_id}
+    resp_header = {"status": STATUS_OK, "type": "closest_preceding_finger"}
+    resp_body = {"ip": finger.addr[0], "port": finger.addr[1], "node_id": finger.node_id}
 
-    return utils.create_request(header, body)
+    return utils.create_request(resp_header, resp_body)
 
 
 def get_prev_successor_list(n):
@@ -93,14 +93,14 @@ def get_prev_successor_list(n):
     :param n: the node
     :return: string of response
     """
-    header = {"status": STATUS_OK, "type": "prev_successor_list"}
+    resp_header = {"status": STATUS_OK, "type": "prev_successor_list"}
     prev_successor_list = [{"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1],
                             "node_id": n.finger_table[0].node_id}]
     for succ in n.successor_list[:-1]:
         prev_successor_list.append({"ip": succ.addr[0], "port": succ.addr[1], "node_id": succ.node_id})
-    body = {"successor_list": prev_successor_list}
+    resp_body = {"successor_list": prev_successor_list}
 
-    return utils.create_request(header, body)
+    return utils.create_request(resp_header, resp_body)
 
 
 def poll():
@@ -108,9 +108,9 @@ def poll():
     Reads poll request from seed server, responds with OK
     :return: string of response
     """
-    header = {"status": STATUS_OK}
+    resp_header = {"status": STATUS_OK}
 
-    return utils.create_request(header, {})
+    return utils.create_request(resp_header, {})
 
 
 # Functions that write to node object n
@@ -128,6 +128,6 @@ def update_predecessor(n, event_queue, body):
     if not n.predecessor or utils.is_between_clockwise(body["node_id"], n.predecessor.node_id, n.node_id):
         event_queue.put(update)
 
-    header = {"status": STATUS_OK}
-    body = {}
-    return utils.create_request(header, body)
+    resp_header = {"status": STATUS_OK}
+    resp_body = {}
+    return utils.create_request(resp_header, resp_body)

@@ -5,11 +5,27 @@ from os import environ
 from src.Finger import Finger
 
 """
-File including various utility functions
+File including various utility functions and data
 """
 
-logging.basicConfig(format="%(asctime)s %(threadName)s-%(levelname)s:%(name)s: %(message)s", level=environ.get("LOGLEVEL", "DEBUG"))
+EXPECTED_REQUEST = {
+    "get_successor": (),
+    "get_predecessor": (),
+    "find_successor": ("for_id",),
+    "get_closest_preceding_finger": ("for_key_id",),
+    "get_prev_successor_list": (),
+    "poll": (),
+    "update_predecessor": ("ip", "port", "node_id"),
+}
+
+# get configuration settings from params.json
+with open("config/params.json") as f:
+    params = json.load(f)
+
+logging.basicConfig(format="%(asctime)s %(threadName)s-%(levelname)s:%(name)s: %(message)s", level=environ.get("LOGLEVEL", params["logging"]["level"]))
 log = logging.getLogger(__name__)
+
+log.info("Loaded params")
 
 
 def create_request(header_dict, body_dict):
