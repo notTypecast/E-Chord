@@ -372,9 +372,9 @@ class Node:
         event_queue = Queue()
 
         # accept incoming connections
-        connection_acceptor = threading.Thread(target=self.accept_connections, args=(self.server, self, event_queue))
-        connection_acceptor.name = "Connection Acceptor"
-        connection_acceptor.daemon = True
+        connection_listener = threading.Thread(target=self.accept_connections, args=(self.server, self, event_queue))
+        connection_listener.name = "Connection Listener"
+        connection_listener.daemon = True
 
         # initialize timer for stabilization of node
         stabilizer = threading.Thread(target=self.stabilize_timer,
@@ -382,7 +382,7 @@ class Node:
         stabilizer.name = "Stabilizer"
         stabilizer.daemon = True
 
-        connection_acceptor.start()
+        connection_listener.start()
         stabilizer.start()
 
         while True:
