@@ -22,10 +22,18 @@ EXPECTED_REQUEST = {
 with open("config/params.json") as f:
     params = json.load(f)
 
-logging.basicConfig(format="%(asctime)s %(threadName)s-%(levelname)s:%(name)s: %(message)s", level=environ.get("LOGLEVEL", params["logging"]["level"]))
+logging.basicConfig(format="%(threadName)s-%(levelname)s: %(message)s", level=environ.get("LOGLEVEL", params["logging"]["level"]))
 log = logging.getLogger(__name__)
 
 log.info("Loaded params")
+
+
+def get_request_body_blueprint(req_type):
+    body = {}
+    for attr in EXPECTED_REQUEST[req_type]:
+        body[attr] = None
+
+    return body
 
 
 def create_request(header_dict, body_dict):
@@ -41,12 +49,11 @@ def create_request(header_dict, body_dict):
     return request_msg
 
 
-def get_id(key, hash_func, params):
+def get_id(key, hash_func):
     """
     Returns ID of key
     :param key: string to hash and get ID
     :param hash_func: hash function to use
-    :param params: params JSON object
     :return: int ID corresponding to given key
     """
     key = key.encode("utf-8")
@@ -69,7 +76,7 @@ def is_between_clockwise(x, lower, upper, inclusive_upper=False):
     :param inclusive_upper: determines if upper should be inclusive or not
     :return: True or False
     """
-    return (lower < upper and lower < x  and (x <= upper if inclusive_upper else x < upper)) or \
+    return (lower < upper and lower < x and (x <= upper if inclusive_upper else x < upper)) or \
            (upper <= lower and ((x <= upper if inclusive_upper else x < upper) or x > lower))
 
 

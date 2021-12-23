@@ -3,7 +3,7 @@ from src.utils import log
 from src.Finger import Finger
 
 """
-handlers.py
+rpc_handlers.py
 | Contains functions which handle remote procedure calls
 | Each request type is mapped to its corresponding function in REQUEST_MAP
 | The request handler thread calls the corresponding function using the request type found in the header
@@ -35,7 +35,10 @@ def get_successor(n):
     :return: string of response
     """
     resp_header = {"status": STATUS_OK, "type": "successor"}
-    resp_body = {"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1], "node_id": n.finger_table[0].node_id}
+    resp_body = utils.get_request_body_blueprint("get_successor")
+    resp_body["ip"] = n.finger_table[0].addr[0]
+    resp_body["port"] = n.finger_table[0].addr[1]
+    resp_body["node_id"] = n.finger_table[0].node_id
 
     return utils.create_request(resp_header, resp_body)
 
@@ -47,10 +50,12 @@ def get_predecessor(n):
     :return: string of response
     """
     resp_header = {"type": "predecessor"}
-    resp_body = {}
+    resp_body = utils.get_request_body_blueprint("get_predecessor")
     if n.predecessor:
         resp_header["status"] = STATUS_OK
-        resp_body = {"ip": n.predecessor.addr[0], "port": n.predecessor.addr[1], "node_id": n.predecessor.node_id}
+        resp_body["ip"] = n.predecessor.addr[0]
+        resp_body["port"] = n.predecessor.addr[1]
+        resp_body["node_id"] = n.predecessor.node_id
     else:
         resp_header["status"] = STATUS_NOT_FOUND
 
@@ -65,8 +70,17 @@ def find_successor(n, body):
     :return: string of response
     """
     successor_data = n.find_successor(body["for_id"])
-    resp_header = {"status": STATUS_OK, "type": "successor"}
-    resp_body = {"ip": successor_data[0], "port": successor_data[1], "node_id": successor_data[2]}
+
+    resp_header = {"type": "successor"}
+    resp_body = utils.get_request_body_blueprint("find_successor")
+    if successor_data:
+        resp_header["status"] = STATUS_OK
+        resp_body["ip"] = successor_data[0]
+        resp_body["port"] = successor_data[1]
+        resp_body["node_id"] = successor_data[2]
+    # look up failed
+    else:
+        resp_header["status"] = STATUS_NOT_FOUND
 
     return utils.create_request(resp_header, resp_body)
 
@@ -78,10 +92,13 @@ def get_closest_preceding_finger(n, body):
     :param body: body of request
     :return: string of response
     """
-    finger = n.closest_preceding_finger(body["for_key_id"])
+    fingers = n.closest_preceding_finger(body["for_key_id"])
 
     resp_header = {"status": STATUS_OK, "type": "closest_preceding_finger"}
-    resp_body = {"ip": finger.addr[0], "port": finger.addr[1], "node_id": finger.node_id}
+    # return fingers and if successor of current node is among them
+    resp_body = {"fingers": [], "contains_successor": n.finger_table[0] in fingers}
+    for finger in fingers:
+        resp_body["fingers"].append({"ip": finger.addr[0], "port": finger.addr[1], "node_id": finger.node_id})
 
     return utils.create_request(resp_header, resp_body)
 
@@ -129,5 +146,4 @@ def update_predecessor(n, event_queue, body):
         event_queue.put(update)
 
     resp_header = {"status": STATUS_OK}
-    resp_body = {}
-    return utils.create_request(resp_header, resp_body)
+    return utils.create_request(resp_header, {})

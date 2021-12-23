@@ -10,12 +10,13 @@ from copy import copy
 from src import utils
 from src.utils import log
 from src.Finger import Finger
-from src.handlers import REQUEST_MAP
+from src.rpc_handlers import REQUEST_MAP
 
 hash_func = sha1
 Finger.hash_func = hash_func
 
 
+# TODO ask_peer return value should always be checked for None
 class Node:
     """
     Defines an E-Chord Node
@@ -36,7 +37,7 @@ class Node:
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         # ID will be SHA-1(IP+port)
-        self.node_id = utils.get_id(self.SERVER_ADDR[0] + str(self.SERVER_ADDR[1]), hash_func, utils.params)
+        self.node_id = utils.get_id(self.SERVER_ADDR[0] + str(self.SERVER_ADDR[1]), hash_func)
         log.debug(f"Initialized with node ID: {self.node_id}")
 
         while True:
@@ -135,6 +136,7 @@ class Node:
             self.finger_table[0] = current_successor
             break
         else:
+            # TODO: fix this
             log.critical("All successors in successor list are dead")
             exit(1)
 
@@ -261,7 +263,7 @@ class Node:
         """
         Finds successor for key_id
         :param key_id: the ID
-        :return: tuple of (ID, port)
+        :return: tuple of (ID, port), or None if lookup failed
         """
         log.debug(f"Finding successor for ID: {key_id}")
         # if this is the only node in the network
@@ -269,6 +271,9 @@ class Node:
             return self.SERVER_ADDR[0], self.SERVER_ADDR[1], self.node_id
 
         current_node = self.find_predecessor(key_id)
+        if not current_node:
+            return None
+
         response = Node.ask_peer(current_node, "get_successor", {})
         return response["body"]["ip"], response["body"]["port"], response["body"]["node_id"]
 
@@ -276,7 +281,7 @@ class Node:
         """
         Finds predecessor for key_id
         :param key_id: the ID
-        :return: tuple of (ID, port)
+        :return: tuple of (ID, port), or None if lookup failed
         """
         log.debug(f"Finding predecessor for ID: {key_id}")
         current_node = Finger(self.SERVER_ADDR, self.node_id)
@@ -284,27 +289,62 @@ class Node:
 
         # while key_id is not between node_id and successor_id (while moving clockwise)
         while not utils.is_between_clockwise(key_id, current_node.node_id, successor_id, inclusive_upper=True):
-            # TODO maybe check for status
-            # TODO deal with failed responses here
+            # ask for closest preceding finger (this will also return fallback fingers, if found)
+            # TODO handle this returning None
             response = Node.ask_peer(current_node.addr, "get_closest_preceding_finger", {"for_key_id": key_id})
-            current_node = Finger((response["body"]["ip"], response["body"]["port"]), response["body"]["node_id"])
-            response = Node.ask_peer((current_node.addr[0], current_node.addr[1]), "get_successor", {})
+            returned_nodes = response["body"]["fingers"]
+
+            # request successor from each returned nodes
+            for node in returned_nodes:
+                response = Node.ask_peer((node["ip"], node["port"]), "get_successor", {})
+                # if response was received, break
+                if response:
+                    current_node = Finger((node["ip"], node["port"]), node["node_id"])
+                    break
+            # if all returned nodes are dead
+            else:
+                # if successor was contained in nodes, it is dead, so lookup fails
+                if response["body"]["contains_successor"]:
+                    return None
+                else:
+                    # get current_node's successor
+                    response = Node.ask_peer(current_node.addr, "get_successor", {})
+                    # ask successor for its successor
+                    response = Node.ask_peer((response["body"]["ip"], response["body"]["port"]), "get_successor", {})
+                    # if that node is dead, lookup fails
+                    if not response:
+                        return None
+                    current_node = Finger((response["body"]["ip"], response["body"]["port"]),
+                                          response["body"]["node_id"])
+
             successor_id = response["body"]["node_id"]
 
         return current_node.addr
 
     def closest_preceding_finger(self, key_id):
         """
-        Gets closest preceding finger for id key_id
+        Gets closest preceding finger for id key_id, as well as fallback fingers
         :param key_id: the ID
         :return: Finger pointing to the closest preceding Node, or self if self is the closest preceding Node
         """
-        # TODO request finger found before returning to ensure its alive, don't return it if it isn't
         log.debug(f"Finding closest preceding finger for ID: {key_id}")
         for i in range(utils.params["ring"]["bits"] - 1, -1, -1):
             if utils.is_between_clockwise(self.finger_table[i].node_id, self.node_id, key_id):
-                return self.finger_table[i]
-        return Finger(self.SERVER_ADDR, self.node_id)
+                # get index of first fallback finger
+                starting_index = i - utils.params["ring"]["fallback_fingers"]
+                starting_index = starting_index if starting_index >= 0 else 0
+                # get fallback fingers
+                fingers = self.finger_table[starting_index:i + 1]
+                fingers.reverse()
+                j = 0
+                # fill in with successor list nodes if there are not enough fallback fingers (low index)
+                while len(fingers) < utils.params["ring"]["fallback_fingers"] + 1 and j < len(self.successor_list):
+                    fingers.append(self.successor_list[j])
+                    j += 1
+
+                return fingers
+
+        return [Finger(self.SERVER_ADDR, self.node_id)]
 
     @staticmethod
     def ask_peer(peer_addr, req_type, body_dict, return_json=True):
@@ -325,8 +365,7 @@ class Node:
                 client.connect(peer_addr)
                 client.sendall(request_msg.encode())
                 data = client.recv(utils.params["net"]["data_size"]).decode()
-            except (socket.error, socket.timeout) as err:
-                log.error(err)
+            except (socket.error, socket.timeout):
                 return None
 
         return data if not return_json else json.loads(data)

@@ -7,7 +7,7 @@ class Finger:
 	def __init__(self, addr, node_id=None):
 		self.addr = addr
 		if not node_id:
-			self.node_id = utils.get_id(addr[0] + str(addr[1]), Finger.hash_func, utils.params)
+			self.node_id = utils.get_id(addr[0] + str(addr[1]), Finger.hash_func)
 		else:
 			self.node_id = node_id
 

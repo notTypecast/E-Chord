@@ -11,6 +11,7 @@
   "ring": {
     "bits": 8,
     "successor_list_length": 4,
+    "fallback_fingers": 2,
     "stabilize_delay": 5
   },
   "net": {
