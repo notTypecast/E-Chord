@@ -16,7 +16,6 @@ hash_func = sha1
 Finger.hash_func = hash_func
 
 
-# TODO ask_peer return value should always be checked for None
 class Node:
     """
     Defines an E-Chord Node
@@ -40,6 +39,20 @@ class Node:
         self.node_id = utils.get_id(self.SERVER_ADDR[0] + str(self.SERVER_ADDR[1]), hash_func)
         log.debug(f"Initialized with node ID: {self.node_id}")
 
+        self.predecessor = None
+
+        self.join_ring()
+
+        Node.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
+                      "add_node", {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]})
+
+        self.listen()
+
+    def join_ring(self):
+        """
+        Joins ring by getting seed from seed server and asking it to find successor
+        :return: None
+        """
         while True:
             # get initial node from seed server
             data = self.get_seed()
@@ -57,7 +70,7 @@ class Node:
                     log.info("Asking seed for successor")
                     response = Node.ask_peer((data["body"]["ip"], data["body"]["port"]),
                                              "find_successor", {"for_id": self.node_id})
-                    if not response:
+                    if not response or response["header"]["status"] not in (200, 300):
                         # tell seed server that seed node has died
                         Node.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
                                       "dead_node", {"ip": data["body"]["ip"], "port": data["body"]["port"]})
@@ -94,8 +107,6 @@ class Node:
 
             break
 
-        self.listen()
-
     def init_successor_list(self):
         """
         Initializes successor_list
@@ -111,7 +122,11 @@ class Node:
 
         # populating this node's successor list
         for i, successor in enumerate(response["body"]["successor_list"]):
-            self.successor_list[i] = Finger((successor["ip"], successor["port"]), successor["node_id"])
+            new_finger = Finger((successor["ip"], successor["port"]), successor["node_id"])
+            try:
+                self.successor_list[i] = new_finger
+            except IndexError:
+                self.successor_list.append(new_finger)
 
         return True
 
@@ -130,15 +145,17 @@ class Node:
                 # current successor was dead, get a new one from the successor list
                 log.info("Successor is dead, getting next in list")
                 log.debug(f"Successor dead is: {current_successor.addr}")
+                if self.predecessor and self.predecessor.node_id == current_successor.node_id:
+                    self.predecessor = None
                 current_successor = self.successor_list[0]
                 del self.successor_list[0]
                 continue
             self.finger_table[0] = current_successor
             break
         else:
-            # TODO: fix this
-            log.critical("All successors in successor list are dead")
-            exit(1)
+            log.info("All successors in successor list are dead")
+            self.join_ring()
+            return
 
         status_ok = response["header"]["status"] in range(200, 300)
 
@@ -175,6 +192,8 @@ class Node:
         i = random.randint(1, utils.params["ring"]["bits"] - 1)
         log.debug(f"Picked finger {i}")
         succ = self.find_successor((self.node_id + 2 ** i) % 2**utils.params["ring"]["bits"])
+        if not succ:
+            return
         self.finger_table[i] = Finger((succ[0], succ[1]), succ[2])
 
     def fix_successor_list(self):
@@ -187,6 +206,8 @@ class Node:
         returned it
         :return: None
         """
+        if not len(self.successor_list):
+            self.successor_list = [Finger(self.SERVER_ADDR)] * utils.params["ring"]["bits"]
         log.info("Fixing a node in successor list...")
         # pick random node
         node_index = random.randint(0, len(self.successor_list) - 1)
@@ -259,6 +280,7 @@ class Node:
         self.successor_list = self.successor_list[:utils.params["ring"]["successor_list_length"]]
         log.info("Updated successor list")
 
+    # TODO see why this might get stuck in an infinite loop of requesting itself followed by closest_preceding_finger
     def find_successor(self, key_id):
         """
         Finds successor for key_id
@@ -275,6 +297,9 @@ class Node:
             return None
 
         response = Node.ask_peer(current_node, "get_successor", {})
+        if not response:
+            return None
+
         return response["body"]["ip"], response["body"]["port"], response["body"]["node_id"]
 
     def find_predecessor(self, key_id):
@@ -287,20 +312,32 @@ class Node:
         current_node = Finger(self.SERVER_ADDR, self.node_id)
         successor_id = self.finger_table[0].node_id
 
+        prev_fingers = []
+
         # while key_id is not between node_id and successor_id (while moving clockwise)
         while not utils.is_between_clockwise(key_id, current_node.node_id, successor_id, inclusive_upper=True):
-            # ask for closest preceding finger (this will also return fallback fingers, if found)
-            # TODO handle this returning None
-            response = Node.ask_peer(current_node.addr, "get_closest_preceding_finger", {"for_key_id": key_id})
-            returned_nodes = response["body"]["fingers"]
-
-            # request successor from each returned nodes
-            for node in returned_nodes:
-                response = Node.ask_peer((node["ip"], node["port"]), "get_successor", {})
-                # if response was received, break
+            # if this finger died in the meantime, get next finger from previous response
+            while True:
+                # ask for closest preceding finger (this will also return fallback fingers, if found)
+                response = Node.ask_peer(current_node.addr, "get_closest_preceding_finger", {"for_key_id": key_id})
                 if response:
+                    break
+                if not len(prev_fingers):
+                    return None
+                next_node = prev_fingers.pop(0)
+                current_node = Finger((next_node["ip"], next_node["port"]), next_node["node_id"])
+
+            returned_nodes = response["body"]["fingers"]
+            prev_fingers = list(returned_nodes)
+
+            # request successor from each returned node
+            for node in returned_nodes:
+                response2 = Node.ask_peer((node["ip"], node["port"]), "get_successor", {})
+                # if response was received, break
+                if response2:
                     current_node = Finger((node["ip"], node["port"]), node["node_id"])
                     break
+                prev_fingers.remove(node)
             # if all returned nodes are dead
             else:
                 # if successor was contained in nodes, it is dead, so lookup fails
@@ -309,15 +346,16 @@ class Node:
                 else:
                     # get current_node's successor
                     response = Node.ask_peer(current_node.addr, "get_successor", {})
-                    # ask successor for its successor
-                    response = Node.ask_peer((response["body"]["ip"], response["body"]["port"]), "get_successor", {})
-                    # if that node is dead, lookup fails
-                    if not response:
-                        return None
                     current_node = Finger((response["body"]["ip"], response["body"]["port"]),
                                           response["body"]["node_id"])
+                    # ask successor for its successor
+                    response2 = Node.ask_peer(current_node.addr, "get_successor", {})
+                    # if that node is dead, lookup fails
+                    if not response2:
+                        return None
+                    prev_fingers = []
 
-            successor_id = response["body"]["node_id"]
+            successor_id = response2["body"]["node_id"]
 
         return current_node.addr
 
@@ -387,8 +425,7 @@ class Node:
             else:
                 log.critical("Connection to seed failed (attempt limit reached)")
                 exit(1)
-            client.sendall(utils.create_request({"type": "add_node"}, {"ip": self.SERVER_ADDR[0],
-                                                                       "port": self.SERVER_ADDR[1]}).encode())
+            client.sendall(utils.create_request({"type": "get_seed"}, {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]}).encode())
             try:
                 data = json.loads(client.recv(utils.params["net"]["data_size"]).decode())
             except socket.timeout:

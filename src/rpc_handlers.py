@@ -23,7 +23,7 @@ REQUEST_MAP = {
     "get_closest_preceding_finger": lambda n, event_queue, body: get_closest_preceding_finger(n, body),
     "get_prev_successor_list": lambda n, event_queue, body: get_prev_successor_list(n),
     "poll": lambda n, event_queue, body: poll(),
-    "update_predecessor": lambda n, event_queue, body: update_predecessor(n, event_queue, body)
+    "update_predecessor": lambda n, event_queue, body: update_predecessor(n, event_queue, body),
 }
 
 
