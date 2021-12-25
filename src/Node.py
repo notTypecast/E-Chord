@@ -171,6 +171,15 @@ class Node:
             if self.node_id == response["body"]["node_id"]:
                 log.debug("Successor's predecessor is this node")
                 return
+
+            # check if successor's predecessor is dead
+            poll_response = self.ask_peer((response["body"]["ip"], response["body"]["port"]), "poll", {})
+
+            # if it is, notify successor and return
+            if not poll_response:
+                self.ask_peer(self.finger_table[0].addr, "clear_predecessor", {})
+                return
+
             # if new node joined between this node and its successor
             if utils.is_between_clockwise(response["body"]["node_id"], self.node_id, self.finger_table[0].node_id):
                 # shift successor list by 1
@@ -183,11 +192,11 @@ class Node:
                 log.debug(f"New succesor address: {response['body']['ip'], response['body']['port']} with node ID: "
                           f"{response['body']['node_id']}")
 
-            # update successor's predecessor to be this node
-            self.ask_peer(self.finger_table[0].addr, "update_predecessor", {"ip": self.SERVER_ADDR[0],
-                                                                            "port": self.SERVER_ADDR[1],
-                                                                            "node_id": self.node_id})
-            log.debug("Asked successor to make this node its predecessor")
+        # update successor's predecessor to be this node
+        self.ask_peer(self.finger_table[0].addr, "update_predecessor", {"ip": self.SERVER_ADDR[0],
+                                                                        "port": self.SERVER_ADDR[1],
+                                                                        "node_id": self.node_id})
+        log.debug("Asked successor to make this node its predecessor")
 
     def fix_fingers(self):
         """
@@ -499,6 +508,7 @@ class Node:
                 self.fix_fingers()
             # if data is function, call it to update state in main thread
             elif callable(data):
+                log.info(f"About to call this: {data}")
                 data(self)
 
             self.stabilize_mutex.w_leave()

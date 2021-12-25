@@ -17,6 +17,7 @@ EXPECTED_REQUEST = {
     "get_prev_successor_list": (),
     "poll": (),
     "update_predecessor": ("ip", "port", "node_id"),
+    "clear_predecessor": ()
 }
 
 # get configuration settings from params.json

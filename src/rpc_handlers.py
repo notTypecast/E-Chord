@@ -24,6 +24,7 @@ REQUEST_MAP = {
     "get_prev_successor_list": lambda n, body: get_prev_successor_list(n),
     "poll": lambda n, body: poll(),
     "update_predecessor": lambda n, body: update_predecessor(n, body),
+    "clear_predecessor": lambda n, body: clear_predecessor(n)
 }
 
 
@@ -143,6 +144,20 @@ def update_predecessor(n, body):
         node.predecessor = Finger((body["ip"], body["port"]), body["node_id"])
     if not n.predecessor or utils.is_between_clockwise(body["node_id"], n.predecessor.node_id, n.node_id):
         n.event_queue.put(update)
+
+    resp_header = {"status": STATUS_OK}
+    return utils.create_request(resp_header, {})
+
+
+def clear_predecessor(n):
+    """
+    Sets n's predecessor to None
+    :param n: node on which to call clear_predecessor
+    :return: string of response
+    """
+    def clear(node):
+        node.predecessor = None
+    n.event_queue.put(clear)
 
     resp_header = {"status": STATUS_OK}
     return utils.create_request(resp_header, {})
