@@ -1,5 +1,6 @@
 import math
 import json
+import threading
 import logging
 from os import environ
 from src.Finger import Finger
@@ -95,3 +96,58 @@ def place_in_successor_list(current_list, response_body, lower):
             break
         if is_between_clockwise(new_node_id, lower, succ.node_id):
             current_list.insert(i, Finger((response_body["ip"], response_body["port"]), new_node_id))
+
+
+class RWLock:
+    """
+    Implements a readers-writer block with no priorities
+    """
+    def __init__(self):
+        """
+        Initializes two mutexes (reader and writer mutex) and the reader counter
+        """
+        self.r_lock = threading.Lock()
+        self.w_lock = threading.Lock()
+        self.readers = 0
+
+    def r_enter(self):
+        """
+        Used for reader to enter critical region
+        :return: None
+        """
+        self.r_lock.acquire()
+        self.readers += 1
+        if self.readers == 1:
+            self.w_lock.acquire()
+        self.r_lock.release()
+
+    def r_leave(self):
+        """
+        Used for reader to leave critical region
+        :return: None
+        """
+        self.r_lock.acquire()
+        self.readers -= 1
+        if not self.readers:
+            self.w_lock.release()
+        self.r_lock.release()
+
+    def r_locked(self):
+        return self.r_lock.locked()
+
+    def w_enter(self):
+        """
+        Used for writer to enter critical region
+        :return: None
+        """
+        self.w_lock.acquire()
+
+    def w_leave(self):
+        """
+        Used for writer to leave critical region
+        :return: None
+        """
+        self.w_lock.release()
+
+    def w_locked(self):
+        return self.w_lock.locked()

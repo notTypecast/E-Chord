@@ -25,6 +25,13 @@ class Node:
         """
         Initializes a new node
         """
+        # RW mutex to avoid writes in the middle of RPCs
+        # RPCs are considered readers, the main thread is considered the writer
+        self.stabilize_mutex = utils.RWLock()
+
+        # create threads to listen for connections and to send stabilize signal
+        self.event_queue = Queue()
+
         # set address for server and client
         self.SERVER_ADDR = ("", port)
 
@@ -43,7 +50,7 @@ class Node:
 
         self.join_ring()
 
-        Node.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
+        self.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
                       "add_node", {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]})
 
         self.listen()
@@ -68,11 +75,11 @@ class Node:
                     self.predecessor = None
                     # get successor from seed node
                     log.info("Asking seed for successor")
-                    response = Node.ask_peer((data["body"]["ip"], data["body"]["port"]),
+                    response = self.ask_peer((data["body"]["ip"], data["body"]["port"]),
                                              "find_successor", {"for_id": self.node_id})
                     if not response or response["header"]["status"] not in (200, 300):
                         # tell seed server that seed node has died
-                        Node.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
+                        self.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
                                       "dead_node", {"ip": data["body"]["ip"], "port": data["body"]["port"]})
                         seed_dead = True
                         break
@@ -114,7 +121,7 @@ class Node:
         """
         # ask successor for this node's successor list
         log.info("Asking successor for this node's successor list")
-        response = Node.ask_peer(self.finger_table[0].addr, "get_prev_successor_list", {})
+        response = self.ask_peer(self.finger_table[0].addr, "get_prev_successor_list", {})
         # successor is dead
         if not response:
             log.info("Successor is dead")
@@ -140,7 +147,7 @@ class Node:
 
         # ask all successors in successor list until one responds, remove dead ones
         while len(self.successor_list):
-            response = Node.ask_peer(current_successor.addr, "get_predecessor", {})
+            response = self.ask_peer(current_successor.addr, "get_predecessor", {})
             if not response:
                 # current successor was dead, get a new one from the successor list
                 log.info("Successor is dead, getting next in list")
@@ -177,7 +184,7 @@ class Node:
                           f"{response['body']['node_id']}")
 
             # update successor's predecessor to be this node
-            Node.ask_peer(self.finger_table[0].addr, "update_predecessor", {"ip": self.SERVER_ADDR[0],
+            self.ask_peer(self.finger_table[0].addr, "update_predecessor", {"ip": self.SERVER_ADDR[0],
                                                                             "port": self.SERVER_ADDR[1],
                                                                             "node_id": self.node_id})
             log.debug("Asked successor to make this node its predecessor")
@@ -222,7 +229,7 @@ class Node:
         # look at that node and each node before it
         while node_index != -1:
             # ping successor and get its successor if alive
-            response = Node.ask_peer(self.successor_list[node_index].addr, "get_successor", {})
+            response = self.ask_peer(self.successor_list[node_index].addr, "get_successor", {})
             if not response:
                 log.info("Found dead successor in list")
                 log.debug(f"ID found dead: {self.successor_list[node_index].node_id}")
@@ -249,7 +256,7 @@ class Node:
 
         # if new_node_id is None, ask successor for its successor
         if new_node_id is None:
-            response = Node.ask_peer(self.finger_table[0].addr, "get_successor", {})
+            response = self.ask_peer(self.finger_table[0].addr, "get_successor", {})
             # if successor is dead, stop and wait for stabilize to fix it
             if not response:
                 log.info("Successor is dead, waiting for next stabilize")
@@ -296,7 +303,7 @@ class Node:
         if not current_node:
             return None
 
-        response = Node.ask_peer(current_node, "get_successor", {})
+        response = self.ask_peer(current_node, "get_successor", {})
         if not response:
             return None
 
@@ -316,10 +323,11 @@ class Node:
 
         # while key_id is not between node_id and successor_id (while moving clockwise)
         while not utils.is_between_clockwise(key_id, current_node.node_id, successor_id, inclusive_upper=True):
+            # log.debug(f"condition: {current_node.node_id} < {key_id} <= {successor_id}")
             # if this finger died in the meantime, get next finger from previous response
             while True:
                 # ask for closest preceding finger (this will also return fallback fingers, if found)
-                response = Node.ask_peer(current_node.addr, "get_closest_preceding_finger", {"for_key_id": key_id})
+                response = self.ask_peer(current_node.addr, "get_closest_preceding_finger", {"for_key_id": key_id})
                 if response:
                     break
                 if not len(prev_fingers):
@@ -332,7 +340,7 @@ class Node:
 
             # request successor from each returned node
             for node in returned_nodes:
-                response2 = Node.ask_peer((node["ip"], node["port"]), "get_successor", {})
+                response2 = self.ask_peer((node["ip"], node["port"]), "get_successor", {})
                 # if response was received, break
                 if response2:
                     current_node = Finger((node["ip"], node["port"]), node["node_id"])
@@ -345,11 +353,11 @@ class Node:
                     return None
                 else:
                     # get current_node's successor
-                    response = Node.ask_peer(current_node.addr, "get_successor", {})
+                    response = self.ask_peer(current_node.addr, "get_successor", {})
                     current_node = Finger((response["body"]["ip"], response["body"]["port"]),
                                           response["body"]["node_id"])
                     # ask successor for its successor
-                    response2 = Node.ask_peer(current_node.addr, "get_successor", {})
+                    response2 = self.ask_peer(current_node.addr, "get_successor", {})
                     # if that node is dead, lookup fails
                     if not response2:
                         return None
@@ -384,27 +392,45 @@ class Node:
 
         return [Finger(self.SERVER_ADDR, self.node_id)]
 
-    @staticmethod
-    def ask_peer(peer_addr, req_type, body_dict, return_json=True):
+    def ask_peer(self, peer_addr, req_type, body_dict, return_json=True):
         """
         Makes request to peer, sending request_msg
+        Releases writer lock if it is enabled, so RPCs can be handled while waiting for response
+        Re-locks writer at the end of the method call if it was enabled
         :param peer_addr: (IP, port) of peer
         :param req_type: type of request for request header
         :param body_dict: dictionary of body
         :param return_json: determines if json or string response should be returned
         :return: string response of peer
         """
+        w_mode = self.stabilize_mutex.w_locked()
+        if w_mode:
+            self.stabilize_mutex.w_leave()
+
         request_msg = utils.create_request({"type": req_type}, body_dict)
 
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            client.settimeout(utils.params["net"]["timeout"])
-            try:
-                client.connect(peer_addr)
-                client.sendall(request_msg.encode())
-                data = client.recv(utils.params["net"]["data_size"]).decode()
-            except (socket.error, socket.timeout):
-                return None
+        # if request is on this node, call RPC handler directly
+        if peer_addr == self.SERVER_ADDR:
+            data = REQUEST_MAP[req_type](self, body_dict)
+        # else, make request for RPC
+        else:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+                client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                client.settimeout(utils.params["net"]["timeout"])
+                try:
+                    client.connect(peer_addr)
+                    client.sendall(request_msg.encode())
+                    data = client.recv(utils.params["net"]["data_size"]).decode()
+                except (socket.error, socket.timeout):
+                    if w_mode:
+                        self.stabilize_mutex.w_enter()
+                    return None
+
+        if w_mode:
+            self.stabilize_mutex.w_enter()
+
+        if not data:
+            return None
 
         return data if not return_json else json.loads(data)
 
@@ -444,17 +470,14 @@ class Node:
         self.server.bind(self.SERVER_ADDR)
         self.server.listen()
 
-        # create threads to listen for connections and to send stabilize signal
-        event_queue = Queue()
-
         # accept incoming connections
-        connection_listener = threading.Thread(target=self.accept_connections, args=(self.server, self, event_queue))
+        connection_listener = threading.Thread(target=self.accept_connections, args=(self.server, self, self.event_queue))
         connection_listener.name = "Connection Listener"
         connection_listener.daemon = True
 
         # initialize timer for stabilization of node
         stabilizer = threading.Thread(target=self.stabilize_timer,
-                                      args=(event_queue, utils.params["ring"]["stabilize_delay"]))
+                                      args=(self.event_queue, utils.params["ring"]["stabilize_delay"]))
         stabilizer.name = "Stabilizer"
         stabilizer.daemon = True
 
@@ -463,7 +486,9 @@ class Node:
 
         while True:
             # wait until event_queue is not empty, then pop
-            data = event_queue.get()
+            data = self.event_queue.get()
+
+            self.stabilize_mutex.w_enter()
 
             log.debug(f"Popped {data} from event queue")
 
@@ -472,11 +497,11 @@ class Node:
                 self.stabilize()
                 self.fix_successor_list()
                 self.fix_fingers()
-                continue
-
             # if data is function, call it to update state in main thread
-            if callable(data):
+            elif callable(data):
                 data(self)
+
+            self.stabilize_mutex.w_leave()
 
     # Thread Methods
     @staticmethod
@@ -503,8 +528,8 @@ class Node:
     def handle_connection(node, event_queue, conn_details):
         """
         Handles existing connection until it closes
-        :param conn_details: connection details (connection, address)
         :param node: the node on which to call the method
+        :param conn_details: connection details (connection, address)
         :param event_queue: shared queue
         :return: None
         """
@@ -522,9 +547,13 @@ class Node:
                 if arg not in data["body"]:
                     return
 
-            # select RPC handler according to RPC type
             log.debug(f"Got RPC call of type: {data['header']['type']}")
-            response = REQUEST_MAP[data["header"]["type"]](node, event_queue, data["body"])
+
+            # get mutex so main thread doesn't change object data during RPC
+            node.stabilize_mutex.r_enter()
+            # select RPC handler according to RPC type
+            response = REQUEST_MAP[data["header"]["type"]](node, data["body"])
+            node.stabilize_mutex.r_leave()
 
             connection.sendall(response.encode())
 
