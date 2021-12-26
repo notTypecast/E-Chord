@@ -24,8 +24,40 @@ REQUEST_MAP = {
     "get_prev_successor_list": lambda n, body: get_prev_successor_list(n),
     "poll": lambda n, body: poll(),
     "update_predecessor": lambda n, body: update_predecessor(n, body),
-    "clear_predecessor": lambda n, body: clear_predecessor(n)
+    "clear_predecessor": lambda n, body: clear_predecessor(n),
+    "debug_pred": lambda n, body: debug_pred(n),
+    "debug_succ_list": lambda n, body: debug_succ_list(n),
+    "debug_finger_table": lambda n, body: debug_finger_table(n)
 }
+
+def debug_pred(n):
+    print("--------------------------------")
+    print(f"My node ID is: {n.node_id}")
+    print("Predecessor is: ")
+    print(f"Addr: {n.predecessor.addr} with ID: {n.predecessor.node_id}")
+    print("--------------------------------")
+    resp_header = {"status": STATUS_OK}
+    return utils.create_request(resp_header, {})
+
+def debug_succ_list(n):
+    print("--------------------------------")
+    print(f"My node ID is: {n.node_id}")
+    print("Successor list is:")
+    for i, succ in enumerate(n.successor_list):
+        print(f"{i} Addr: {succ.addr} with ID: {succ.node_id}")
+    print("--------------------------------")
+    resp_header = {"status": STATUS_OK}
+    return utils.create_request(resp_header, {})
+
+def debug_finger_table(n):
+    print("--------------------------------")
+    print(f"My node ID is: {n.node_id}")
+    print("Finger table is:")
+    for i, succ in enumerate(n.finger_table):
+        print(f"{i} Addr: {succ.addr} with ID: {succ.node_id}")
+    print("--------------------------------")
+    resp_header = {"status": STATUS_OK}
+    return utils.create_request(resp_header, {})
 
 
 # Functions that only read from node object n
