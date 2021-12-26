@@ -1,0 +1,73 @@
+from src import utils
+
+HELP_MSG = "Available commands:\n" \
+           ""
+
+command_help = {
+    "lookup": "Usage: lookup [key]\n"
+              "Finds value of given key in E-Chord.",
+    "insert": "Usage: insert [key] [value]\n"
+              "Inserts pair (key, value) into E-Chord.",
+    "delete": "Usage: delete [key]\n"
+              "Deletes key from E-Chord.",
+    "help": HELP_MSG
+}
+
+
+def run_client(peer_addr):
+    while True:
+        command = input(">")
+        command = command.lower().split(" ")
+
+        if command[0] == "lookup":
+            if len(command) != 2:
+                print(command_help["lookup"])
+                continue
+
+            response = utils.ask_peer(peer_addr, "find_key", {"key": command[1]})
+
+            if not response or response["header"]["status"] not in range(200, 300):
+                print("Key not found.")
+                continue
+
+            print(f"Key {command[1]} has value: {response['body']['value']}")
+
+        elif command[0] == "insert":
+            if len(command) != 3:
+                print(command_help["insert"])
+                continue
+
+            response = utils.ask_peer(peer_addr, "find_and_store_key", {"key": command[1], "value": command[2]})
+
+            if not response or response["header"]["status"] not in range(200, 300):
+                print("Could not store key.")
+                continue
+
+            print("Successfully stored pair.")
+
+        elif command[0] == "delete":
+            if len(command) != 2:
+                print(command_help["delete"])
+                continue
+
+            response = utils.ask_peer(peer_addr, "find_and_delete_key", {"key": command[1]})
+
+            if not response or response["header"]["status"] not in range(200, 300):
+                print("Could not delete key.")
+                continue
+
+            print("Successfully deleted key.")
+
+        elif command[0] == "help":
+            print(command_help["help"])
+
+        elif command[0] == "exit":
+            return
+
+        else:
+            print("Unknown command. Type help for a list of commands.")
+
+
+if __name__ == "__main__":
+    port = int(input("Port of node: "))
+    run_client(("", port))

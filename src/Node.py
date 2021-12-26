@@ -11,6 +11,7 @@ from src import utils
 from src.utils import log
 from src.Finger import Finger
 from src.rpc_handlers import REQUEST_MAP
+from src.Storage import Storage
 
 hash_func = sha1
 Finger.hash_func = hash_func
@@ -25,6 +26,9 @@ class Node:
         """
         Initializes a new node
         """
+        # data storage dictionary to hold (key, value) pairs
+        self.storage = Storage()
+
         # RW mutex to avoid writes in the middle of RPCs
         # RPCs are considered readers, the main thread is considered the writer
         self.stabilize_mutex = utils.RWLock()
@@ -78,7 +82,7 @@ class Node:
                     log.info("Asking seed for successor")
                     response = self.ask_peer((data["body"]["ip"], data["body"]["port"]),
                                              "find_successor", {"for_id": self.node_id})
-                    if not response or response["header"]["status"] not in (200, 300):
+                    if not response or response["header"]["status"] not in range(200, 300):
                         # tell seed server that seed node has died
                         self.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
                                       "dead_node", {"ip": data["body"]["ip"], "port": data["body"]["port"]})
@@ -136,6 +140,80 @@ class Node:
             except IndexError:
                 self.successor_list.append(new_finger)
 
+        return True
+
+    def find_key(self, key):
+        key_id = utils.get_id(key, hash_func)
+        log.info(f"Finding value for ID {key_id}")
+
+        new_node = self.find_successor(key_id)
+
+        if not new_node:
+            log.debug("Couldn't find node")
+            return None
+
+        log.debug(f"Node found to store key has ID: {new_node[2]}")
+        response = self.ask_peer(new_node[:2], "lookup", {"key": key})
+
+        if not response or response["header"]["status"] not in range(200, 300):
+            log.debug("Couldn't find key")
+            return None
+
+        log.debug("Value found")
+        return response["body"]["value"]
+
+    def find_and_store_key(self, key, value):
+        """
+        Finds node that key should be stored in and stores it there
+        That node will deal with backing up the key in other nodes
+        If the key already exists, this will update its value with the given value
+        :param key: the key
+        :param value: the value of the key
+        :return: bool, whether the insertion was successful
+        """
+        key_id = utils.get_id(key, hash_func)
+        log.info(f"Finding node to store key {key} with ID {key_id}")
+
+        new_node = self.find_successor(key_id)
+
+        if not new_node:
+            log.debug("Couldn't find node")
+            return False
+
+        log.debug(f"Node found to store key has ID: {new_node[2]}")
+        response = self.ask_peer(new_node[:2], "store_key", {"key": key, "value": value, "key_id": key_id})
+
+        if not response or response["header"]["status"] not in range(200, 300):
+            log.debug("Couldn't store key")
+            return False
+
+        log.debug("Pair stored")
+        return True
+
+    def find_and_delete_key(self, key):
+        """
+        Finds node that key should be deleted from and deletes it
+        That node will deal with deleting backups
+        :param key: the key
+        :return: bool, whether the deletion was successful
+        """
+        key_id = utils.get_id(key, hash_func)
+        log.info(f"Finding node to delete key {key} with ID {key_id}")
+
+        new_node = self.find_successor(key_id)
+
+        if not new_node:
+            log.debug("Couldn't find node")
+            return False
+
+        log.debug(f"Node found to delete key has ID: {new_node[2]}")
+        response = self.ask_peer(new_node[:2], "delete_key", {"key": key})
+
+        if not response or response["header"]["status"] not in range(200, 300):
+            log.debug("Couldn't delete key")
+            return False
+
+        log.debug("Pair deleted")
         return True
 
     def stabilize(self):
@@ -208,7 +286,7 @@ class Node:
         log.info("Fixing a finger...")
         i = random.randint(1, utils.params["ring"]["bits"] - 1)
         log.debug(f"Picked finger {i}")
-        succ = self.find_successor((self.node_id + 2 ** i) % 2**utils.params["ring"]["bits"])
+        succ = self.find_successor((self.node_id + 2 ** i) % 2 ** utils.params["ring"]["bits"])
         if not succ:
             return
         self.finger_table[i] = Finger((succ[0], succ[1]), succ[2])
@@ -234,10 +312,10 @@ class Node:
                 return
             if not self.successor_list:
                 self.successor_list.append(Finger((response["body"]["ip"], response["body"]["port"]),
-                                           response["body"]["node_id"]))
+                                                  response["body"]["node_id"]))
             elif response["body"]["node_id"] != self.successor_list[0].node_id:
                 self.successor_list[0] = Finger((response["body"]["ip"], response["body"]["port"]),
-                                           response["body"]["node_id"])
+                                                response["body"]["node_id"])
 
             self.successor_list_index = 0
             log.debug("Updated successor list")
@@ -277,7 +355,7 @@ class Node:
             return
 
         self.successor_list[self.successor_list_index] = Finger((response["body"]["ip"], response["body"]["port"]),
-                                              response["body"]["node_id"])
+                                                                response["body"]["node_id"])
         log.debug("Updated successor list")
 
     # TODO see why this might get stuck in an infinite loop of requesting itself followed by closest_preceding_finger
@@ -444,7 +522,8 @@ class Node:
             else:
                 log.critical("Connection to seed failed (attempt limit reached)")
                 exit(1)
-            client.sendall(utils.create_request({"type": "get_seed"}, {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]}).encode())
+            client.sendall(utils.create_request({"type": "get_seed"},
+                                                {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]}).encode())
             try:
                 data = json.loads(client.recv(utils.params["net"]["data_size"]).decode())
             except socket.timeout:
@@ -464,7 +543,8 @@ class Node:
         self.server.listen()
 
         # accept incoming connections
-        connection_listener = threading.Thread(target=self.accept_connections, args=(self.server, self, self.event_queue))
+        connection_listener = threading.Thread(target=self.accept_connections,
+                                               args=(self.server, self, self.event_queue))
         connection_listener.name = "Connection Listener"
         connection_listener.daemon = True
 
@@ -492,7 +572,6 @@ class Node:
                 self.fix_fingers()
             # if data is function, call it to update state in main thread
             elif callable(data):
-                log.info(f"About to call this: {data}")
                 data(self)
 
             self.stabilize_mutex.w_leave()

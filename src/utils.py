@@ -2,6 +2,7 @@ import math
 import json
 import threading
 import logging
+import socket
 from os import environ
 from src.Finger import Finger
 
@@ -18,27 +19,26 @@ EXPECTED_REQUEST = {
     "poll": (),
     "update_predecessor": ("ip", "port", "node_id"),
     "clear_predecessor": (),
+    "store_key": ("key", "value", "key_id"),
+    "delete_key": ("key",),
+    "lookup": ("key",),
+    "find_key": ("key",),
+    "find_and_store_key": ("key", "value"),
+    "find_and_delete_key": ("key",),
     "debug_pred": (),
     "debug_succ_list": (),
-    "debug_finger_table": ()
+    "debug_finger_table": (),
 }
 
 # get configuration settings from params.json
 with open("config/params.json") as f:
     params = json.load(f)
 
-logging.basicConfig(format="%(threadName)s-%(levelname)s: %(message)s", level=environ.get("LOGLEVEL", params["logging"]["level"]))
+logging.basicConfig(format="%(threadName)s-%(levelname)s: %(message)s",
+                    level=environ.get("LOGLEVEL", params["logging"]["level"]))
 log = logging.getLogger(__name__)
 
 log.info("Loaded params")
-
-
-def get_request_body_blueprint(req_type):
-    body = {}
-    for attr in EXPECTED_REQUEST[req_type]:
-        body[attr] = None
-
-    return body
 
 
 def create_request(header_dict, body_dict):
@@ -69,6 +69,35 @@ def get_id(key, hash_func):
     res_id = int.from_bytes(hash_func(key).digest()[-trunc_size:], "big")
 
     return res_id % 2**ring_size
+
+
+def ask_peer(peer_addr, req_type, body_dict, return_json=True):
+    """
+    Edited version of ask_peer for general use outside Node
+    Sends a request and returns the response
+    :param peer_addr: (IP, port) of peer
+    :param req_type: type of request for request header
+    :param body_dict: dictionary of body
+    :param return_json: determines if json or string response should be returned
+    :return: string response of peer
+    """
+
+    request_msg = create_request({"type": req_type}, body_dict)
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+        client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        client.settimeout(params["net"]["timeout"])
+        try:
+            client.connect(peer_addr)
+            client.sendall(request_msg.encode())
+            data = client.recv(params["net"]["data_size"]).decode()
+        except (socket.error, socket.timeout):
+            return None
+
+    if not data:
+        return None
+
+    return data if not return_json else json.loads(data)
 
 
 def is_between_clockwise(x, lower, upper, inclusive_upper=False):

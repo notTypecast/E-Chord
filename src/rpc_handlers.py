@@ -1,5 +1,4 @@
 from src import utils
-from src.utils import log
 from src.Finger import Finger
 
 """
@@ -25,12 +24,24 @@ REQUEST_MAP = {
     "poll": lambda n, body: poll(),
     "update_predecessor": lambda n, body: update_predecessor(n, body),
     "clear_predecessor": lambda n, body: clear_predecessor(n),
+    "store_key": lambda n, body: store_key(n, body),
+    "delete_key": lambda n, body: delete_key(n, body),
+    "lookup": lambda n, body: lookup(n, body),
+    "find_key": lambda n, body: find_key(n, body),
+    "find_and_store_key": lambda n, body: find_and_store_key(n, body),
+    "find_and_delete_key": lambda n, body: find_and_delete_key(n, body),
     "debug_pred": lambda n, body: debug_pred(n),
     "debug_succ_list": lambda n, body: debug_succ_list(n),
     "debug_finger_table": lambda n, body: debug_finger_table(n)
 }
 
+
 def debug_pred(n):
+    """
+    Prints predecessor
+    :param n: node whose predecessor to print
+    :return: None
+    """
     print("--------------------------------")
     print(f"My node ID is: {n.node_id}")
     print("Predecessor is: ")
@@ -39,7 +50,13 @@ def debug_pred(n):
     resp_header = {"status": STATUS_OK}
     return utils.create_request(resp_header, {})
 
+
 def debug_succ_list(n):
+    """
+    Prints successor list
+    :param n: node whose successor list to print
+    :return: None
+    """
     print("--------------------------------")
     print(f"My node ID is: {n.node_id}")
     print("Successor list is:")
@@ -49,7 +66,13 @@ def debug_succ_list(n):
     resp_header = {"status": STATUS_OK}
     return utils.create_request(resp_header, {})
 
+
 def debug_finger_table(n):
+    """
+    Prints finger table
+    :param n: node whose table to print
+    :return: None
+    """
     print("--------------------------------")
     print(f"My node ID is: {n.node_id}")
     print("Finger table is:")
@@ -67,11 +90,9 @@ def get_successor(n):
     :param n: node whose successor to return
     :return: string of response
     """
-    resp_header = {"status": STATUS_OK, "type": "successor"}
-    resp_body = utils.get_request_body_blueprint("get_successor")
-    resp_body["ip"] = n.finger_table[0].addr[0]
-    resp_body["port"] = n.finger_table[0].addr[1]
-    resp_body["node_id"] = n.finger_table[0].node_id
+    resp_header = {"status": STATUS_OK}
+    resp_body = {"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1],
+                 "node_id": n.finger_table[0].node_id}
 
     return utils.create_request(resp_header, resp_body)
 
@@ -82,8 +103,8 @@ def get_predecessor(n):
     :param n: node whose predecessor to return
     :return: string of response
     """
-    resp_header = {"type": "predecessor"}
-    resp_body = utils.get_request_body_blueprint("get_predecessor")
+    resp_header = {}
+    resp_body = {}
     if n.predecessor:
         resp_header["status"] = STATUS_OK
         resp_body["ip"] = n.predecessor.addr[0]
@@ -104,8 +125,8 @@ def find_successor(n, body):
     """
     successor_data = n.find_successor(body["for_id"])
 
-    resp_header = {"type": "successor"}
-    resp_body = utils.get_request_body_blueprint("find_successor")
+    resp_header = {}
+    resp_body = {}
     if successor_data:
         resp_header["status"] = STATUS_OK
         resp_body["ip"] = successor_data[0]
@@ -127,7 +148,7 @@ def get_closest_preceding_finger(n, body):
     """
     fingers = n.closest_preceding_finger(body["for_key_id"])
 
-    resp_header = {"status": STATUS_OK, "type": "closest_preceding_finger"}
+    resp_header = {"status": STATUS_OK}
     # return fingers and if successor of current node is among them
     resp_body = {"fingers": [], "contains_successor": n.finger_table[0] in fingers}
     for finger in fingers:
@@ -143,7 +164,7 @@ def get_prev_successor_list(n):
     :param n: the node
     :return: string of response
     """
-    resp_header = {"status": STATUS_OK, "type": "prev_successor_list"}
+    resp_header = {"status": STATUS_OK}
     prev_successor_list = [{"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1],
                             "node_id": n.finger_table[0].node_id}]
     for succ in n.successor_list[:-1]:
@@ -161,6 +182,68 @@ def poll():
     resp_header = {"status": STATUS_OK}
 
     return utils.create_request(resp_header, {})
+
+
+def find_key(n, body):
+    """
+    Looks through chord for node with key and returns its value
+    :param n: the node which should call find_key
+    :param body: the request body
+    :return: string of response
+    """
+    value = n.find_key(body["key"])
+
+    resp_header = {}
+    resp_body = {}
+
+    if value:
+        resp_header["status"] = STATUS_OK
+        resp_body["value"] = value
+    else:
+        resp_header["status"] = STATUS_NOT_FOUND
+
+    return utils.create_request(resp_header, resp_body)
+
+
+def find_and_store_key(n, body):
+    """
+    Looks through chord for node where key should be stored and stores it there
+    :param n: the node on which to call find_and_store_key
+    :param body: the request body
+    :return: string of response
+    """
+    resp_header = {"status": STATUS_OK if n.find_and_store_key(body["key"], body["value"]) else STATUS_NOT_FOUND}
+
+    return utils.create_request(resp_header, {})
+
+
+def find_and_delete_key(n, body):
+    """
+    Looks through chord for node that has key stored and deletes it
+    :param n: the node on which to call find_and_delete_key
+    :param body: the request body
+    :return: string of response
+    """
+    resp_header = {"status": STATUS_OK if n.find_and_delete_key(body["key"]) else STATUS_NOT_FOUND}
+
+    return utils.create_request(resp_header, {})
+
+
+def lookup(n, body):
+    """
+    Looks up a key in the data of this node
+    :param n: the node whose data to look for the key in
+    :param body: the request body
+    :return: string of response
+    """
+    exists = body["key"] in n.storage
+    resp_header = {"status": STATUS_OK if exists else STATUS_NOT_FOUND}
+    resp_body = {}
+
+    if exists:
+        resp_body["value"] = n.storage[body["key"]]
+
+    return utils.create_request(resp_header, resp_body)
 
 
 # Functions that write to node object n
@@ -192,4 +275,34 @@ def clear_predecessor(n):
     n.event_queue.put(clear)
 
     resp_header = {"status": STATUS_OK}
+    return utils.create_request(resp_header, {})
+
+
+def store_key(n, body):
+    """
+    Stores a new (key, value) pair to the data of this node
+    :param n: the node into which to insert the pair
+    :param body: the request body
+    :return: string of response
+    """
+    def store(node):
+        node.storage.add_key(body["key"], body["value"], body["key_id"])
+    n.event_queue.put(store)
+
+    resp_header = {"status": STATUS_OK}
+    return utils.create_request(resp_header, {})
+
+
+def delete_key(n, body):
+    """
+    Removes a key from the data of this node
+    :param n: the node from which to remove the key
+    :param body: the request body
+    :return: string of response
+    """
+    def remove(node):
+        del node.storage[body["key"]]
+    n.event_queue.put(remove)
+
+    resp_header = {"status": STATUS_OK if body["key"] in n.storage else STATUS_NOT_FOUND}
     return utils.create_request(resp_header, {})
