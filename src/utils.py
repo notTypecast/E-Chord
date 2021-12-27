@@ -19,15 +19,18 @@ EXPECTED_REQUEST = {
     "poll": (),
     "update_predecessor": ("ip", "port", "node_id"),
     "clear_predecessor": (),
+    "batch_store_keys": ("keys", ),
     "store_key": ("key", "value", "key_id"),
     "delete_key": ("key",),
     "lookup": ("key",),
     "find_key": ("key",),
     "find_and_store_key": ("key", "value"),
     "find_and_delete_key": ("key",),
+    "leave_ring": (),
     "debug_pred": (),
     "debug_succ_list": (),
     "debug_finger_table": (),
+    "debug_storage": (),
 }
 
 # get configuration settings from params.json

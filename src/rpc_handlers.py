@@ -24,15 +24,18 @@ REQUEST_MAP = {
     "poll": lambda n, body: poll(),
     "update_predecessor": lambda n, body: update_predecessor(n, body),
     "clear_predecessor": lambda n, body: clear_predecessor(n),
+    "batch_store_keys": lambda n, body: batch_store_keys(n, body),
     "store_key": lambda n, body: store_key(n, body),
     "delete_key": lambda n, body: delete_key(n, body),
     "lookup": lambda n, body: lookup(n, body),
     "find_key": lambda n, body: find_key(n, body),
     "find_and_store_key": lambda n, body: find_and_store_key(n, body),
     "find_and_delete_key": lambda n, body: find_and_delete_key(n, body),
+    "leave_ring": lambda n, body: leave_ring(n),
     "debug_pred": lambda n, body: debug_pred(n),
     "debug_succ_list": lambda n, body: debug_succ_list(n),
-    "debug_finger_table": lambda n, body: debug_finger_table(n)
+    "debug_finger_table": lambda n, body: debug_finger_table(n),
+    "debug_storage": lambda n, body: debug_storage(n)
 }
 
 
@@ -44,8 +47,11 @@ def debug_pred(n):
     """
     print("--------------------------------")
     print(f"My node ID is: {n.node_id}")
-    print("Predecessor is: ")
-    print(f"Addr: {n.predecessor.addr} with ID: {n.predecessor.node_id}")
+    if n.predecessor:
+        print("Predecessor is: ")
+        print(f"Addr: {n.predecessor.addr} with ID: {n.predecessor.node_id}")
+    else:
+            print("There is no predecessor")
     print("--------------------------------")
     resp_header = {"status": STATUS_OK}
     return utils.create_request(resp_header, {})
@@ -78,6 +84,22 @@ def debug_finger_table(n):
     print("Finger table is:")
     for i, succ in enumerate(n.finger_table):
         print(f"{i} Addr: {succ.addr} with ID: {succ.node_id}")
+    print("--------------------------------")
+    resp_header = {"status": STATUS_OK}
+    return utils.create_request(resp_header, {})
+
+
+def debug_storage(n):
+    """
+    Prints keys and values stored in node n
+    :param n:
+    :return:
+    """
+
+    print("--------------------------------")
+    print(f"My node ID is: {n.node_id}")
+    print("Storage content is:")
+    print(n.storage)
     print("--------------------------------")
     resp_header = {"status": STATUS_OK}
     return utils.create_request(resp_header, {})
@@ -245,7 +267,6 @@ def lookup(n, body):
 
     return utils.create_request(resp_header, resp_body)
 
-
 # Functions that write to node object n
 def update_predecessor(n, body):
     """
@@ -257,6 +278,8 @@ def update_predecessor(n, body):
     # function to be run by main thread to update data
     def update(node):
         node.predecessor = Finger((body["ip"], body["port"]), body["node_id"])
+        # if move fails, do nothing (keys are kept on this node)
+        node.move_keys_to_predecessor()
     if not n.predecessor or utils.is_between_clockwise(body["node_id"], n.predecessor.node_id, n.node_id):
         n.event_queue.put(update)
 
@@ -273,6 +296,22 @@ def clear_predecessor(n):
     def clear(node):
         node.predecessor = None
     n.event_queue.put(clear)
+
+    resp_header = {"status": STATUS_OK}
+    return utils.create_request(resp_header, {})
+
+
+def batch_store_keys(n, body):
+    """
+    Stores every (key, value) pair passed in the request
+    :param n: the node into which to insert the pairs
+    :param body: the request body
+    :return: string of response
+    """
+    def store(node):
+        for k_dict in body["keys"]:
+            node.storage.add_key(k_dict["key"], k_dict["value"], k_dict["key_id"])
+    n.event_queue.put(store)
 
     resp_header = {"status": STATUS_OK}
     return utils.create_request(resp_header, {})
@@ -305,4 +344,19 @@ def delete_key(n, body):
     n.event_queue.put(remove)
 
     resp_header = {"status": STATUS_OK if body["key"] in n.storage else STATUS_NOT_FOUND}
+    return utils.create_request(resp_header, {})
+
+
+def leave_ring(n):
+    """
+    Tells node n to leave the ring
+    :param n: the node
+    :return: None
+    """
+    def leave(node):
+        node.leaving = True
+    n.event_queue.put(1)
+    n.event_queue.put(leave)
+
+    resp_header = {"status": STATUS_OK}
     return utils.create_request(resp_header, {})

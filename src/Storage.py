@@ -13,6 +13,15 @@ class Storage:
         self.keys_to_ids = {}
         self.keys_to_vals = {}
 
+    def get_id(self, key):
+        """
+        Returns the ID of the key in dictionary (if it exists)
+        Raises KeyError if it doesn't
+        :param key: the key
+        :return: the ID
+        """
+        return self.keys_to_ids[key]
+
     def __getitem__(self, key):
         """
         Returns the value of the key in dictionary (if it exists)
@@ -53,3 +62,34 @@ class Storage:
         """
         return key in self.keys_to_vals
 
+    def __iter__(self):
+        """
+        Overloads iteration for the storage object
+        :return: iterator for storage keys
+        """
+        return iter(self.keys_to_vals)
+
+    def __str__(self):
+        """
+        Returns string representation of storage dictionary
+        :return: the string representation
+        """
+        s = "{"
+        for key in self:
+            s += str(key) + ": " + f"(ID: {self.get_id(key)}, value: {self[key]}), "
+
+        s = (s[:-2] if len(s) > 1 else s) + "}"
+
+        return s
+
+    def dump(self):
+        """
+        | Dumps all storage data into a list of dictionaries, each having three keys: key, value, key_id with their
+        | corresponding values
+        :return: the list of dicts
+        """
+        d = []
+        for key in self:
+            d.append({"key": key, "value": self[key], "key_id": self.get_id(key)})
+
+        return d

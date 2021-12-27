@@ -41,7 +41,7 @@ class Node:
 
         # initialize finger table and successor list
         self.finger_table = [Finger(self.SERVER_ADDR)] * utils.params["ring"]["bits"]
-        self.successor_list = [None] * utils.params["ring"]["successor_list_length"]
+        self.successor_list = []
         self.successor_list_index = -1
 
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -52,6 +52,10 @@ class Node:
         log.debug(f"Initialized with node ID: {self.node_id}")
 
         self.predecessor = None
+
+        # variable indicating intent to leave
+        # once true, the node will try to move its keys and leave after each stabilize
+        self.leaving = False
 
         self.join_ring()
 
@@ -216,6 +220,56 @@ class Node:
         log.debug("Pair deleted")
         return True
 
+    def move_keys_to_predecessor(self):
+        """
+        Moves keys from this node to predecessor
+        The keys moved will be the ones, which should be in that node instead of this one
+        Condition for moving a key: key_id <= other_node.id
+        :return: bool; whether move was successful
+        """
+        if self.predecessor.node_id == self.node_id:
+            return True
+
+        to_move = []
+        for key in self.storage:
+            # keys that should be transferred are between current node (lower bound) and new node (inclusive upper bound)
+            # as it stands, the keys held by current node fall either after or before the new node
+            # the keys that fall between should be left with this node
+            # the keys that fall before the new node should be transferred to it
+            if utils.is_between_clockwise(self.storage.get_id(key), self.node_id, self.predecessor.node_id,
+                                          inclusive_upper=True):
+                to_move.append({"key": key, "value": self.storage[key], "key_id": self.storage.get_id(key)})
+
+        if not to_move:
+            return True
+
+        response = self.ask_peer(self.predecessor.addr, "batch_store_keys", {"keys": to_move})
+        if not response or response["header"]["status"] not in range(200, 300):
+            return False
+
+        # delete from local storage if keys were moved successfully
+        for key_dict in to_move:
+            del self.storage[key_dict["key"]]
+
+        return True
+
+    def move_keys_to_successor(self):
+        """
+        Move all keys to successor before exiting
+        :return: bool; whether move was successful
+        """
+        if self.finger_table[0].node_id == self.node_id:
+            return True
+
+        to_move = self.storage.dump()
+
+        if not to_move:
+            return True
+
+        response = self.ask_peer(self.finger_table[0].addr, "batch_store_keys", {"keys": to_move})
+
+        return bool(response)
+
     def stabilize(self):
         """
         Stabilize ring by updating successor or successor's predecessor
@@ -358,7 +412,6 @@ class Node:
                                                                 response["body"]["node_id"])
         log.debug("Updated successor list")
 
-    # TODO see why this might get stuck in an infinite loop of requesting itself followed by closest_preceding_finger
     def find_successor(self, key_id):
         """
         Finds successor for key_id
@@ -390,7 +443,10 @@ class Node:
         current_node = Finger(self.SERVER_ADDR, self.node_id)
         successor_id = self.finger_table[0].node_id
 
+        # keep fallback fingers in case first returned finger is dead
         prev_fingers = []
+        # keep visited nodes to prevent infinite loops
+        visited_ids = set()
 
         # while key_id is not between node_id and successor_id (while moving clockwise)
         while not utils.is_between_clockwise(key_id, current_node.node_id, successor_id, inclusive_upper=True):
@@ -398,7 +454,11 @@ class Node:
             # if this finger died in the meantime, get next finger from previous response
             while True:
                 # ask for closest preceding finger (this will also return fallback fingers, if found)
-                response = self.ask_peer(current_node.addr, "get_closest_preceding_finger", {"for_key_id": key_id})
+                if current_node.node_id not in visited_ids:
+                    response = self.ask_peer(current_node.addr, "get_closest_preceding_finger", {"for_key_id": key_id})
+                    visited_ids.add(current_node.node_id)
+                else:
+                    response = None
                 if response:
                     break
                 if not prev_fingers:
@@ -445,6 +505,7 @@ class Node:
         :return: Finger pointing to the closest preceding Node, or self if self is the closest preceding Node
         """
         log.debug(f"Finding closest preceding finger for ID: {key_id}")
+
         for i in range(utils.params["ring"]["bits"] - 1, -1, -1):
             if utils.is_between_clockwise(self.finger_table[i].node_id, self.node_id, key_id):
                 # get index of first fallback finger
@@ -568,11 +629,17 @@ class Node:
             # data == 0 is used for stabilize event
             if not data:
                 self.stabilize()
+                if self.leaving and self.move_keys_to_successor():
+                    break
                 self.fix_successor_list()
                 self.fix_fingers()
             # if data is function, call it to update state in main thread
             elif callable(data):
                 data(self)
+            # if data == 1, immediate leave should be attempted
+            else:
+                if self.move_keys_to_successor():
+                    break
 
             self.stabilize_mutex.w_leave()
 

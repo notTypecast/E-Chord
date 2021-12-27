@@ -1,7 +1,10 @@
 from src import utils
 
 HELP_MSG = "Available commands:\n" \
-           ""
+           ">lookup [key]\n" \
+           "insert [key] [value]\n" \
+           "delete [key]\n" \
+           "leave"
 
 command_help = {
     "lookup": "Usage: lookup [key]\n"
@@ -10,6 +13,8 @@ command_help = {
               "Inserts pair (key, value) into E-Chord.",
     "delete": "Usage: delete [key]\n"
               "Deletes key from E-Chord.",
+    "leave": "Usage: leave\n"
+             "Tells node to leave ring",
     "help": HELP_MSG
 }
 
@@ -57,6 +62,14 @@ def run_client(peer_addr):
                 continue
 
             print("Successfully deleted key.")
+
+        elif command[0] == "leave":
+            if len(command) != 1:
+                print(command_help["leave"])
+                continue
+
+            utils.ask_peer(peer_addr, "leave_ring", {})
+            break
 
         elif command[0] == "help":
             print(command_help["help"])

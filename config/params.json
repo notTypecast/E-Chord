@@ -16,7 +16,7 @@
   },
   "net": {
     "timeout": 5,
-    "data_size": 1024
+    "data_size": 8192
   },
   "logging": {
     "level": "DEBUG"
