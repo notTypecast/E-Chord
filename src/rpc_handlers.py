@@ -13,6 +13,7 @@ remove the callable object from the queue and call it, writing the changes
 
 STATUS_OK = 200
 STATUS_NOT_FOUND = 404
+STATUS_CONFLICT = 409
 
 # Map RPC types with handlers
 REQUEST_MAP = {
@@ -35,7 +36,8 @@ REQUEST_MAP = {
     "debug_pred": lambda n, body: debug_pred(n),
     "debug_succ_list": lambda n, body: debug_succ_list(n),
     "debug_finger_table": lambda n, body: debug_finger_table(n),
-    "debug_storage": lambda n, body: debug_storage(n)
+    "debug_storage": lambda n, body: debug_storage(n),
+    "debug_fail": lambda n, body: debug_fail(n)
 }
 
 
@@ -103,6 +105,14 @@ def debug_storage(n):
     print("--------------------------------")
     resp_header = {"status": STATUS_OK}
     return utils.create_request(resp_header, {})
+
+
+def debug_fail(n):
+    """
+    Closes the node without notifying other nodes, to simulate failrue
+    :return: None
+    """
+    n.event_queue.put(lambda node: exit(0))
 
 
 # Functions that only read from node object n
@@ -266,6 +276,7 @@ def lookup(n, body):
         resp_body["value"] = n.storage[body["key"]]
 
     return utils.create_request(resp_header, resp_body)
+
 
 # Functions that write to node object n
 def update_predecessor(n, body):

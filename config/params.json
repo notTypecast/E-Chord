@@ -9,10 +9,10 @@
     "client_port": 9151
   },
   "ring": {
-    "bits": 8,
+    "bits": 11,
     "successor_list_length": 4,
     "fallback_fingers": 2,
-    "stabilize_delay": 5
+    "stabilize_delay": 3
   },
   "net": {
     "timeout": 5,
@@ -20,6 +20,12 @@
   },
   "logging": {
     "level": "DEBUG"
+  },
+  "testing": {
+    "initial_port": 9150,
+    "total_nodes": 40,
+    "stabilize_wait_period": 40,
+    "percentage_to_remove": 50
   }
 }
 

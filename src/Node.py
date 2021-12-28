@@ -10,7 +10,7 @@ from copy import copy
 from src import utils
 from src.utils import log
 from src.Finger import Finger
-from src.rpc_handlers import REQUEST_MAP
+from src.rpc_handlers import REQUEST_MAP, STATUS_CONFLICT
 from src.Storage import Storage
 
 hash_func = sha1
@@ -60,7 +60,7 @@ class Node:
         self.join_ring()
 
         self.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
-                      "add_node", {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]})
+                      "add_node", {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1], "node_id": self.node_id})
 
         self.listen()
 
@@ -73,6 +73,9 @@ class Node:
             # get initial node from seed server
             data = self.get_seed()
             log.debug("Asked seed server")
+            if data["header"]["status"] == STATUS_CONFLICT:
+                log.critical("ID conflict in network. Please change port.")
+                exit(1)
 
             # Join ring
             # if at least one other node exists
@@ -89,7 +92,8 @@ class Node:
                     if not response or response["header"]["status"] not in range(200, 300):
                         # tell seed server that seed node has died
                         self.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
-                                      "dead_node", {"ip": data["body"]["ip"], "port": data["body"]["port"]})
+                                      "dead_node", {"ip": data["body"]["ip"], "port": data["body"]["port"],
+                                                    "node_id": data["body"]["node_id"]})
                         seed_dead = True
                         break
 
@@ -232,10 +236,11 @@ class Node:
 
         to_move = []
         for key in self.storage:
-            # keys that should be transferred are between current node (lower bound) and new node (inclusive upper bound)
-            # as it stands, the keys held by current node fall either after or before the new node
-            # the keys that fall between should be left with this node
-            # the keys that fall before the new node should be transferred to it
+            # Keys that should be transferred are between current node (lower bound)
+            # and new node (inclusive upper bound)
+            # As it stands, the keys held by current node fall either after or before the new node
+            # The keys that fall between should be left with this node
+            # The keys that fall before the new node should be transferred to it
             if utils.is_between_clockwise(self.storage.get_id(key), self.node_id, self.predecessor.node_id,
                                           inclusive_upper=True):
                 to_move.append({"key": key, "value": self.storage[key], "key_id": self.storage.get_id(key)})
@@ -584,7 +589,8 @@ class Node:
                 log.critical("Connection to seed failed (attempt limit reached)")
                 exit(1)
             client.sendall(utils.create_request({"type": "get_seed"},
-                                                {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1]}).encode())
+                                                {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1],
+                                                 "node_id": self.node_id}).encode())
             try:
                 data = json.loads(client.recv(utils.params["net"]["data_size"]).decode())
             except socket.timeout:
