@@ -5,12 +5,10 @@
     "attempt_limit": 4
   },
   "host": {
-    "server_port": 9150,
-    "client_port": 9151
+    "server_port": 9150
   },
   "ring": {
-    "bits": 11,
-    "successor_list_length": 4,
+    "bits": 14,
     "fallback_fingers": 2,
     "stabilize_delay": 3
   },
@@ -23,8 +21,8 @@
   },
   "testing": {
     "initial_port": 9150,
-    "total_nodes": 40,
-    "stabilize_wait_period": 40,
+    "total_nodes": 400,
+    "stabilize_wait_period": 60,
     "percentage_to_remove": 50
   }
 }

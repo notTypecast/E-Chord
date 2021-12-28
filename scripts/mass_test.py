@@ -71,7 +71,7 @@ total_removed = 0
 
 while total_removed * 100 / len(node_details) < params["testing"]["percentage_to_remove"]:
     n = choice(total_nodes)
-    ask_peer(("", n), "debug_fail", {})
+    ask_peer(("", n), "leave_ring", {})
     total_nodes.remove(n)
     total_removed += 1
     print(f"total_removed: {total_removed}")

@@ -395,7 +395,7 @@ class Node:
         # current node alive and last in list
         if self.successor_list_index == len(self.successor_list) - 1:
             # list at max capacity
-            if len(self.successor_list) == utils.params["ring"]["successor_list_length"]:
+            if len(self.successor_list) == utils.params["ring"]["bits"]:
                 self.successor_list_index = -1
                 log.debug("Verified successor list")
                 return
