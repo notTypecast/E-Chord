@@ -704,11 +704,12 @@ class Node:
                 main_request = "".join(data[2:])
                 size_received = len(main_request.encode())
 
-                if size_received >= data_size:
-                    data = main_request
-                else:
-                    extra = connection.recv(utils.next_power_of_2(data_size - size_received)).decode()
-                    data = main_request + extra
+                while size_received < data_size:
+                    next_data = connection.recv(utils.params["net"]["data_size"])
+                    size_received += len(next_data)
+                    main_request += next_data.decode()
+
+                data = main_request
 
             data = json.loads(data)
 
@@ -718,7 +719,6 @@ class Node:
                     return
 
             log.debug(f"Got RPC call of type: {data['header']['type']}")
-
 
             # get mutex so main thread doesn't change object data during RPC
             node.stabilize_mutex.r_enter()
