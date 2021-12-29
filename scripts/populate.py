@@ -6,9 +6,6 @@ from sys import argv
 with open(argv[1]) as f:
     data = json.load(f)
 
-eventdict = data["result"]
-
-
 def create_request(header_dict, body_dict):
     """
     Creates request from passed header and body
@@ -49,8 +46,8 @@ def ask_peer(peer_addr, req_type, body_dict, return_json=True):
 
     return data if not return_json else json.loads(data)
 
-for event in eventdict:
-    ask_peer(("", 9150), "find_and_store_key", {"key": event, "value": eventdict[event]})
+for event in data:
+    ask_peer(("", 9150), "find_and_store_key", {"key": event, "value": data[event]})
 
 
 

@@ -10,9 +10,87 @@ os.chdir("../")
 
 nodes = {}
 nodes_p = {}
+total_keys = {}
 
 with open("config/params.json") as f:
     params = json.load(f)
+
+
+def buildTable(data):
+    leftTopCorner = "╔"
+    leftBottomCorner = "╚"
+    rightTopCorner = "╗"
+    rightBottomCorner = "╝"
+    hSide = "═"
+    hSideBottom = "╦"
+    hSideTop = "╩"
+    vSide = "║"
+    vSideRight = "╠"
+    vSideLeft = "╣"
+    center = "╬"
+
+    columnMaximums = []
+
+    column = 0
+    while column < len(data[0]):
+        row = 0
+        columnMax = 0
+        while row < len(data):
+            if len(data[row][column]) > columnMax:
+                columnMax = len(data[row][column])
+
+            row += 1
+
+        columnMaximums.append(columnMax)
+
+        column += 1
+
+    vSideIndexes = []
+    for maximum in columnMaximums:
+        vSideIndexes.append(maximum + 3)
+
+    topLine = leftTopCorner
+    bottomLine = leftBottomCorner
+    middleLine = vSideRight
+
+    for index in vSideIndexes:
+        indexSide = hSide * (index - 1)
+
+        topLine += indexSide + hSideBottom
+        bottomLine += indexSide + hSideTop
+        middleLine += indexSide + center
+
+    topLine = topLine[:-1] + rightTopCorner
+    bottomLine = bottomLine[:-1] + rightBottomCorner
+    middleLine = middleLine[:-1] + vSideLeft
+
+    dataLines = []
+
+    for row in data:
+        currItem = 0
+        rowString = ""
+        while currItem < len(row):
+            padSpace = " " * ((vSideIndexes[currItem] - len(row[currItem])) // 2)
+            toAdd = vSide + padSpace + row[currItem]
+            rowString += toAdd + " " * (vSideIndexes[currItem] - len(toAdd))
+
+            currItem += 1
+
+        dataLines.append(rowString + vSide)
+
+    helpMessage = topLine + "\n"
+
+    currDataLine = 0
+    while currDataLine < len(dataLines):
+        helpMessage += dataLines[currDataLine] + "\n"
+        if currDataLine != len(dataLines) - 1:
+            helpMessage += middleLine + "\n"
+
+        currDataLine += 1
+
+    helpMessage += bottomLine
+
+    return helpMessage
 
 
 def get_id(key, hash_func):
@@ -77,14 +155,20 @@ while True:
 
     for port in ports:
         ID = get_id(str(port), sha1)
-        req = "get_successor"
-        d = nodes
 
-        for _ in range(2):
+        requests = ["get_successor", "get_predecessor", "debug_get_total_keys"]
+        dicts = [nodes, nodes_p, total_keys]
+
+        for i in range(3):
+            req = requests[i]
+            d = dicts[i]
             r = ask_peer(("", port), req, {})
             if r:
                 if r["header"]["status"] in range(200, 300):
-                    d[ID] = r["body"]["node_id"]
+                    if i != 2:
+                        d[ID] = r["body"]["node_id"]
+                    else:
+                        d[ID] = r["body"]["total_keys"]
                 else:
                     d[ID] = "None"
             else:
@@ -92,17 +176,22 @@ while True:
                 try:
                     # this might cause an actual node to be deleted due to conflict
                     del d[ID]
-                except:
+                except KeyError:
                     pass
-
-            req = "get_predecessor"
-            d = nodes_p
 
     os.system("clear")
 
+    ALL = [["Successors", "Predecessors", "Keys"]]
+
     l = sorted(list(nodes))[::-1]
-    print("Successors\t\tPredecessors")
     for i in range(len(l)):
-        print(l[len(l) - i - 1], "->", nodes[l[len(l) - i - 1]], "\t\t", l[i], "<-", nodes_p[l[i]])
+        ALL.append([
+            f"{l[len(l) - i - 1]} -> {nodes[l[len(l) - i - 1]]}",
+            f"{l[i]} <- {nodes_p[l[i]]}",
+            f"{l[len(l) - i - 1]}: {total_keys[l[len(l) - i - 1]]}"
+        ])
+
+    table = buildTable(ALL)
+    print(table)
 
     time.sleep(3)

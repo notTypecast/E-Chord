@@ -37,7 +37,8 @@ REQUEST_MAP = {
     "debug_succ_list": lambda n, body: debug_succ_list(n),
     "debug_finger_table": lambda n, body: debug_finger_table(n),
     "debug_storage": lambda n, body: debug_storage(n),
-    "debug_fail": lambda n, body: debug_fail(n)
+    "debug_fail": lambda n, body: debug_fail(n),
+    "debug_get_total_keys": lambda n, body: debug_get_total_keys(n)
 }
 
 
@@ -113,6 +114,18 @@ def debug_fail(n):
     :return: None
     """
     n.event_queue.put(lambda node: exit(0))
+
+
+def debug_get_total_keys(n):
+    """
+    Returns response to get_total_keys remote procedure call
+    :param n: node whose total keys to return
+    :return: string of reponse
+    """
+    resp_header = {"status": STATUS_OK}
+    resp_body = {"total_keys": len(n.storage)}
+
+    return utils.create_request(resp_header, resp_body)
 
 
 # Functions that only read from node object n

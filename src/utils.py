@@ -31,7 +31,8 @@ EXPECTED_REQUEST = {
     "debug_succ_list": (),
     "debug_finger_table": (),
     "debug_storage": (),
-    "debug_fail": ()
+    "debug_fail": (),
+    "debug_get_total_keys": ()
 }
 
 # get configuration settings from params.json

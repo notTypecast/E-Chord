@@ -82,6 +82,9 @@ class Storage:
 
         return s
 
+    def __len__(self):
+        return len(self.keys_to_ids)
+
     def dump(self):
         """
         | Dumps all storage data into a list of dictionaries, each having three keys: key, value, key_id with their
