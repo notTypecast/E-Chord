@@ -2,9 +2,9 @@ from src import utils
 
 HELP_MSG = "Available commands:\n" \
            ">lookup [key]\n" \
-           "insert [key] [value]\n" \
-           "delete [key]\n" \
-           "leave"
+           ">insert [key] [value]\n" \
+           ">delete [key]\n" \
+           ">leave"
 
 command_help = {
     "lookup": "Usage: lookup [key]\n"

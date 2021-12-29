@@ -248,7 +248,7 @@ class Node:
         if not to_move:
             return True
 
-        response = self.ask_peer(self.predecessor.addr, "batch_store_keys", {"keys": to_move})
+        response = self.ask_peer(self.predecessor.addr, "batch_store_keys", {"keys": to_move}, pre_request=True)
         if not response or response["header"]["status"] not in range(200, 300):
             return False
 
@@ -271,7 +271,7 @@ class Node:
         if not to_move:
             return True
 
-        response = self.ask_peer(self.finger_table[0].addr, "batch_store_keys", {"keys": to_move})
+        response = self.ask_peer(self.finger_table[0].addr, "batch_store_keys", {"keys": to_move}, pre_request=True)
 
         return bool(response)
 
@@ -529,7 +529,7 @@ class Node:
 
         return [Finger(self.SERVER_ADDR, self.node_id)]
 
-    def ask_peer(self, peer_addr, req_type, body_dict, return_json=True):
+    def ask_peer(self, peer_addr, req_type, body_dict, return_json=True, pre_request=False):
         """
         Makes request to peer, sending request_msg
         Releases writer lock if it is enabled, so RPCs can be handled while waiting for response
@@ -538,6 +538,7 @@ class Node:
         :param req_type: type of request for request header
         :param body_dict: dictionary of body
         :param return_json: determines if json or string response should be returned
+        :param pre_request: whether request should be preceded by request of type size
         :return: string response of peer
         """
         w_mode = self.stabilize_mutex.w_locked()
@@ -556,7 +557,13 @@ class Node:
                 client.settimeout(utils.params["net"]["timeout"])
                 try:
                     client.connect(peer_addr)
-                    client.sendall(request_msg.encode())
+                    enc_request_msg = request_msg.encode()
+                    if pre_request:
+                        pre_req_msg = utils.create_request({"type": "size"}, {"data_size": len(enc_request_msg)})
+                        # using $ as delimiter to identify pre-requests
+                        pre_req_msg = "$" + pre_req_msg + "$"
+                        client.sendall(pre_req_msg.encode())
+                    client.sendall(enc_request_msg)
                     data = client.recv(utils.params["net"]["data_size"]).decode()
                 except (socket.error, socket.timeout):
                     if w_mode:
@@ -611,7 +618,7 @@ class Node:
 
         # accept incoming connections
         connection_listener = threading.Thread(target=self.accept_connections,
-                                               args=(self.server, self, self.event_queue))
+                                               args=(self.server, self))
         connection_listener.name = "Connection Listener"
         connection_listener.daemon = True
 
@@ -651,12 +658,11 @@ class Node:
 
     # Thread Methods
     @staticmethod
-    def accept_connections(server, node, event_queue):
+    def accept_connections(server, node):
         """
         Accepts a new connection on the passed socket and places it in queue
         :param server: the socket
         :param node: the node
-        :param event_queue: shared queue
         :return: None
         """
         while True:
@@ -666,17 +672,16 @@ class Node:
             log.info(f"Got new connection from: {conn_details[1]}")
 
             # data is connection, so start new thread to handle it
-            connection_handler = threading.Thread(target=Node.handle_connection, args=(node, event_queue, conn_details))
+            connection_handler = threading.Thread(target=Node.handle_connection, args=(node, conn_details))
             connection_handler.name = f"{conn_details[1]} Handler"
             connection_handler.start()
 
     @staticmethod
-    def handle_connection(node, event_queue, conn_details):
+    def handle_connection(node, conn_details):
         """
         Handles existing connection until it closes
         :param node: the node on which to call the method
         :param conn_details: connection details (connection, address)
-        :param event_queue: shared queue
         :return: None
         """
         connection, address = conn_details
@@ -686,6 +691,25 @@ class Node:
             if not data:
                 return
 
+            # if $ is first character, pre_request is contained
+            if data[0] == "$":
+                # split to ['', pre_request, main_request]
+                data = data.split("$")
+                # pre-request is the first part of the received data
+                pre_request = data[1]
+                pre_request = json.loads(pre_request)
+
+                data_size = pre_request["body"]["data_size"]
+
+                main_request = "".join(data[2:])
+                size_received = len(main_request.encode())
+
+                if size_received >= data_size:
+                    data = main_request
+                else:
+                    extra = connection.recv(utils.next_power_of_2(data_size - size_received)).decode()
+                    data = main_request + extra
+
             data = json.loads(data)
 
             # ensure all expected arguments have been sent
@@ -694,6 +718,7 @@ class Node:
                     return
 
             log.debug(f"Got RPC call of type: {data['header']['type']}")
+
 
             # get mutex so main thread doesn't change object data during RPC
             node.stabilize_mutex.r_enter()

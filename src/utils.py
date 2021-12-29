@@ -135,6 +135,10 @@ def place_in_successor_list(current_list, response_body, lower):
             current_list.insert(i, Finger((response_body["ip"], response_body["port"]), new_node_id))
 
 
+def next_power_of_2(num):
+    return 2**math.ceil(math.log(num, 2))
+
+
 class RWLock:
     """
     Implements a readers-writer block with no priorities
