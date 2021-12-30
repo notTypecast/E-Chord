@@ -1,10 +1,19 @@
 import json
 import socket
-import time
 from sys import argv
 
 with open(argv[1]) as f:
     data = json.load(f)
+
+if argv[2] in ("insert", "i"):
+    req = "find_and_store_key"
+    req_body = lambda e: {"key": e, "value": data[e]}
+elif argv[2] in ("lookup", "l"):
+    req = "find_key"
+    req_body = lambda e: {"key": e}
+else:
+    print("Expected request type (i, l) as second argument.")
+    exit(1)
 
 def create_request(header_dict, body_dict):
     """
@@ -47,7 +56,7 @@ def ask_peer(peer_addr, req_type, body_dict, return_json=True):
     return data if not return_json else json.loads(data)
 
 for event in data:
-    ask_peer(("", 9150), "find_and_store_key", {"key": event, "value": data[event]})
+    ask_peer(("", 9150), req, req_body(event))
 
 
 
