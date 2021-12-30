@@ -22,7 +22,7 @@ class Node:
     Defines an E-Chord Node
     """
 
-    def __init__(self, port):
+    def __init__(self):
         """
         Initializes a new node
         """
@@ -37,7 +37,7 @@ class Node:
         self.event_queue = Queue()
 
         # set address for server and client
-        self.SERVER_ADDR = ("", port)
+        self.SERVER_ADDR = (utils.get_ip(), utils.params["host"]["server_port"])
 
         # initialize finger table and successor list
         self.finger_table = [Finger(self.SERVER_ADDR)] * utils.params["ring"]["bits"]
@@ -151,6 +151,11 @@ class Node:
         return True
 
     def find_key(self, key):
+        """
+        Finds node that contains key and returns the key's value
+        :param key: the key
+        :return: the key's value, or None if not found
+        """
         key_id = utils.get_id(key, hash_func)
         log.info(f"Finding value for ID {key_id}")
 
@@ -173,7 +178,6 @@ class Node:
     def find_and_store_key(self, key, value):
         """
         Finds node that key should be stored in and stores it there
-        That node will deal with backing up the key in other nodes
         If the key already exists, this will update its value with the given value
         :param key: the key
         :param value: the value of the key
@@ -589,26 +593,26 @@ class Node:
                 try:
                     client.connect((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]))
                     break
-                except (socket.error, socket.timeout) as err:
+                except (socket.error, socket.timeout):
                     log.info(f"Failed to connect to seed server, retrying... "
                              f"{i + 1}/{utils.params['seed_server']['attempt_limit']}")
+                    time.sleep(2)
             else:
                 log.critical("Connection to seed failed (attempt limit reached)")
                 exit(1)
             client.sendall(utils.create_request({"type": "get_seed"},
                                                 {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1],
                                                  "node_id": self.node_id}).encode())
-            try:
-                data = json.loads(client.recv(utils.params["net"]["data_size"]).decode())
-            except socket.timeout:
-                pass
+            data = json.loads(client.recv(utils.params["net"]["data_size"]).decode())
 
         return data
 
     def listen(self):
         """
         Main server loop
-        Runs node and listens for requests from other nodes, then creates a new thread to handle them
+        Starts threads for accepting new connections, as well as timing stabilize
+        Reads shared queue for new data and handles it accordingly
+        Writer thread: writes all data to the object; any other thread that needs to write data passes it to the queue
         :return: None
         """
         log.info(f"Starting node on {self.SERVER_ADDR[0]}:{self.SERVER_ADDR[1]}")
@@ -660,18 +664,17 @@ class Node:
     @staticmethod
     def accept_connections(server, node):
         """
-        Accepts a new connection on the passed socket and places it in queue
+        Accepts a new connection on the passed socket and starts a new thread to handle it
         :param server: the socket
         :param node: the node
         :return: None
         """
         while True:
-            # accept connection and add to event queue for handling
-            # main thread will start a new thread to handle it
+            # wait for new connection
             conn_details = server.accept()
             log.info(f"Got new connection from: {conn_details[1]}")
 
-            # data is connection, so start new thread to handle it
+            # start new thread to handle connection
             connection_handler = threading.Thread(target=Node.handle_connection, args=(node, conn_details))
             connection_handler.name = f"{conn_details[1]} Handler"
             connection_handler.start()
@@ -701,9 +704,11 @@ class Node:
 
                 data_size = pre_request["body"]["data_size"]
 
+                # anything received after is part of the main request
                 main_request = "".join(data[2:])
                 size_received = len(main_request.encode())
 
+                # data might be large chunk, so read in batches
                 while size_received < data_size:
                     next_data = connection.recv(utils.params["net"]["data_size"])
                     size_received += len(next_data)

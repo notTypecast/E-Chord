@@ -36,7 +36,6 @@ for event in data:
     response = None
     while response is None:
         response = utils.ask_peer(("", choice(ports)), req, req_body(event))
-        # sleep(.05)
 
     if response["header"]["status"] not in (200, 300):
         failed_req += 1
