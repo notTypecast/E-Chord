@@ -152,7 +152,7 @@ def ask_peer(peer_addr, req_type, body_dict, return_json=True):
 
 ports = range(params["testing"]["initial_port"], params["testing"]["initial_port"] + params["testing"]["total_nodes"])
 while True:
-
+    allkeys = 0
     for port in ports:
         ID = get_id(str(port), sha1)
 
@@ -169,6 +169,7 @@ while True:
                         d[ID] = r["body"]["node_id"]
                     else:
                         d[ID] = r["body"]["total_keys"]
+                        allkeys += d[ID]
                 else:
                     d[ID] = "None"
             else:
@@ -193,5 +194,6 @@ while True:
 
     table = buildTable(ALL)
     print(table)
+    print(f"Total keys: {allkeys}")
 
     time.sleep(3)

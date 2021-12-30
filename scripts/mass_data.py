@@ -2,9 +2,10 @@ import json
 import socket
 from sys import argv
 import os
+from random import choice
+from time import sleep
 import sys
 sys.path.append(".")
-
 
 with open(argv[1]) as f:
     data = json.load(f)
@@ -24,17 +25,24 @@ else:
     print("Expected request type (i, l) as second argument.")
     exit(1)
 
-
 failed_req = 0
 total_req = 0
-for event in data:
-    response = utils.ask_peer(("", 9150), req, req_body(event))
 
-    if not response or response["header"]["status"] not in (200, 300):
+ports = range(utils.params["testing"]["initial_port"],
+              utils.params["testing"]["initial_port"] + utils.params["testing"]["total_nodes"])
+
+
+for event in data:
+    response = None
+    while response is None:
+        response = utils.ask_peer(("", choice(ports)), req, req_body(event))
+        # sleep(.05)
+
+    if response["header"]["status"] not in (200, 300):
         failed_req += 1
     total_req += 1
 
-    print(f"\rFail percentage: {failed_req*100/total_req}%" + 20*" ", end="")
+    print("\rTried {} keys; Fail percentage: {:4f}%".format(total_req, failed_req*100/total_req) + 20*" ", end="")
 
 
 
