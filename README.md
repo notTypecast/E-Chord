@@ -17,6 +17,8 @@ On top of the features of the base Chord protocol, the following ones have been 
 - **Custom Parameters**: By editing the `config/params.json` file, various parameters regarding the network and scripts can be customized. It is required that all nodes run with the same parameters.
 
 ## Simulation Scripts
+All simulation scripts assume nodes are running locally, on the same machine (`localhost`).
+
 - **Visualizer**: Pings each node periodically, retrieving information regarding its successor, its predecessor, and how many keys that node has. Shows the information on the screen.
 - **Mass Node**: Adds multiple nodes to the network. After waiting for a set amount of time, removes a percentage of those nodes from the network. Values can be customized in the `params.json` file.
 - **Mass Data**: Adds or looks up data in the network. The input file name must be specified as the first parameter. The required format is JSON. The second parameter should either be `insert`/`i`, or `lookup`/`l`. The former will add the data to the network, whereas the latter will look up the data. Both scripts will display the failure percentage of their respective requests. 

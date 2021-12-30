@@ -1,4 +1,5 @@
 from src import utils
+from sys import argv
 
 HELP_MSG = "Available commands:\n" \
            ">lookup [key]\n" \
@@ -82,5 +83,7 @@ def run_client(peer_addr):
 
 
 if __name__ == "__main__":
-    port = int(input("Port of node: "))
-    run_client(("", port))
+    if len(argv) != 3:
+        print("Expected arguments: IP, PORT")
+        exit(1)
+    run_client((argv[1], int(argv[2])))

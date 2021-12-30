@@ -24,14 +24,13 @@ def create_request(header_dict, body_dict):
     return request_msg
 
 
-def ask_peer(peer_addr, req_type, body_dict, return_json=True):
+def ask_peer(peer_addr, req_type, body_dict):
     """
     Edited version of ask_peer for general use outside Node
     Sends a request and returns the response
     :param peer_addr: (IP, port) of peer
     :param req_type: type of request for request header
     :param body_dict: dictionary of body
-    :param return_json: determines if json or string response should be returned
     :return: string response of peer
     """
 

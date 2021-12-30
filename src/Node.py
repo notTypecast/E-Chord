@@ -533,7 +533,7 @@ class Node:
 
         return [Finger(self.SERVER_ADDR, self.node_id)]
 
-    def ask_peer(self, peer_addr, req_type, body_dict, return_json=True, pre_request=False):
+    def ask_peer(self, peer_addr, req_type, body_dict, pre_request=False):
         """
         Makes request to peer, sending request_msg
         Releases writer lock if it is enabled, so RPCs can be handled while waiting for response
@@ -541,7 +541,6 @@ class Node:
         :param peer_addr: (IP, port) of peer
         :param req_type: type of request for request header
         :param body_dict: dictionary of body
-        :param return_json: determines if json or string response should be returned
         :param pre_request: whether request should be preceded by request of type size
         :return: string response of peer
         """
@@ -580,7 +579,7 @@ class Node:
         if not data:
             return None
 
-        return data if not return_json else json.loads(data)
+        return json.loads(data)
 
     def get_seed(self):
         """

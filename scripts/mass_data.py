@@ -1,9 +1,7 @@
 import json
-import socket
 from sys import argv
 import os
 from random import choice
-from time import sleep
 import sys
 sys.path.append(".")
 
@@ -42,20 +40,3 @@ for event in data:
     total_req += 1
 
     print("\rTried {} keys; Fail percentage: {:4f}%".format(total_req, failed_req*100/total_req) + 20*" ", end="")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
