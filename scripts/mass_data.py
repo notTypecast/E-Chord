@@ -3,6 +3,7 @@ from sys import argv
 import os
 from random import choice
 import sys
+
 sys.path.append(".")
 
 with open(argv[1]) as f:
@@ -29,14 +30,14 @@ total_req = 0
 ports = range(utils.params["testing"]["initial_port"],
               utils.params["testing"]["initial_port"] + utils.params["testing"]["total_nodes"])
 
-
 for event in data:
     response = None
     while response is None:
-        response = utils.ask_peer(("", choice(ports)), req, req_body(event))
+        response = utils.ask_peer(("", choice(ports)), req, req_body(event), custom_timeout=.1)
 
     if response["header"]["status"] not in (200, 300):
         failed_req += 1
     total_req += 1
 
-    print("\rTried {} keys; Fail percentage: {:4f}%".format(total_req, failed_req*100/total_req) + 20*" ", end="")
+    print("\rTried {}/{} keys; Fail percentage: {:4f}%".format(total_req, len(data),
+                                                               failed_req * 100 / total_req) + 20 * " ", end="")

@@ -166,17 +166,17 @@ while True:
             if r:
                 if r["header"]["status"] in range(200, 300):
                     if i != 2:
-                        d[ID] = r["body"]["node_id"]
+                        d[port, ID] = r["body"]["node_id"]
                     else:
-                        d[ID] = r["body"]["total_keys"]
-                        allkeys += d[ID]
+                        d[port, ID] = r["body"]["total_keys"]
+                        allkeys += d[port, ID]
                 else:
-                    d[ID] = "None"
+                    d[port, ID] = "None"
             else:
                 # print(f"Couldn't reach node {ID}")
                 try:
                     # this might cause an actual node to be deleted due to conflict
-                    del d[ID]
+                    del d[port, ID]
                 except KeyError:
                     pass
 
@@ -184,13 +184,16 @@ while True:
 
     ALL = [["Successors", "Predecessors", "Keys"]]
 
-    l = sorted(list(nodes))[::-1]
+    l = sorted(list(nodes), key=lambda key: key[1])[::-1]
     for i in range(len(l)):
-        ALL.append([
-            f"{l[len(l) - i - 1]} -> {nodes[l[len(l) - i - 1]]}",
-            f"{l[i]} <- {nodes_p[l[i]]}",
-            f"{l[len(l) - i - 1]}: {total_keys[l[len(l) - i - 1]]}"
-        ])
+        try:
+            ALL.append([
+                f"{l[len(l) - i - 1][1]} -> {nodes[l[len(l) - i - 1]]}",
+                f"{l[i][1]} <- {nodes_p[l[i]]}",
+                f"{l[len(l) - i - 1][1]}: {total_keys[l[len(l) - i - 1]]}"
+            ])
+        except KeyError:
+            pass
 
     table = buildTable(ALL)
     print(table)
