@@ -92,14 +92,14 @@ def get_id(key, hash_func):
     return res_id % 2**ring_size
 
 
-def ask_peer(peer_addr, req_type, body_dict, return_json=True):
+def ask_peer(peer_addr, req_type, body_dict, custom_timeout=None):
     """
     Edited version of ask_peer for general use outside Node
     Sends a request and returns the response
     :param peer_addr: (IP, port) of peer
     :param req_type: type of request for request header
     :param body_dict: dictionary of body
-    :param return_json: determines if json or string response should be returned
+    :param custom_timeout: timeout for request; network parameter is used if None
     :return: string response of peer
     """
 
@@ -107,7 +107,7 @@ def ask_peer(peer_addr, req_type, body_dict, return_json=True):
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
         client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        client.settimeout(params["net"]["timeout"])
+        client.settimeout(custom_timeout if custom_timeout is not None else params["net"]["timeout"])
         try:
             client.connect(peer_addr)
             client.sendall(request_msg.encode())
@@ -118,7 +118,7 @@ def ask_peer(peer_addr, req_type, body_dict, return_json=True):
     if not data:
         return None
 
-    return data if not return_json else json.loads(data)
+    return json.loads(data)
 
 
 def is_between_clockwise(x, lower, upper, inclusive_upper=False):

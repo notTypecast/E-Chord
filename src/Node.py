@@ -22,7 +22,7 @@ class Node:
     Defines an E-Chord Node
     """
 
-    def __init__(self):
+    def __init__(self, port=None):
         """
         Initializes a new node
         """
@@ -37,7 +37,7 @@ class Node:
         self.event_queue = Queue()
 
         # set address for server and client
-        self.SERVER_ADDR = (utils.get_ip(), utils.params["host"]["server_port"])
+        self.SERVER_ADDR = ("", port) if port is not None else (utils.get_ip(), utils.params["host"]["server_port"])
 
         # initialize finger table and successor list
         self.finger_table = [Finger(self.SERVER_ADDR)] * utils.params["ring"]["bits"]
