@@ -203,6 +203,10 @@ while True:
     table = buildTable(ALL)
     print(table)
     print(f"Total keys: {allkeys}")
-    print("Stability: {:.2f}%".format(stable_nodes/len(l)*100))
+    try:
+        stability = stable_nodes/len(l)*100
+    except ZeroDivisionError:
+        stability = 100
+    print("Stability: {:.2f}%".format(stability))
 
     time.sleep(3)
