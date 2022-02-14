@@ -184,6 +184,8 @@ while True:
 
     ALL = [["Successors", "Predecessors", "Keys"]]
 
+    stable_nodes = 0
+
     l = sorted(list(nodes), key=lambda key: key[1])[::-1]
     for i in range(len(l)):
         try:
@@ -192,11 +194,15 @@ while True:
                 f"{l[i][1]} <- {nodes_p[l[i]]}",
                 f"{l[len(l) - i - 1][1]}: {total_keys[l[len(l) - i - 1]]}"
             ])
+
+            stable_nodes += 1 if (nodes[l[len(l) - i - 1]] == l[(len(l) - i - 2) % len(l)][1]) & \
+                                 (nodes_p[l[i]] == l[(i + 1) % len(l)][1]) else 0
         except KeyError:
             pass
 
     table = buildTable(ALL)
     print(table)
     print(f"Total keys: {allkeys}")
+    print("Stability: {:.2f}%".format(stable_nodes/len(l)*100))
 
     time.sleep(3)

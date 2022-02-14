@@ -3,8 +3,11 @@ from sys import argv
 import os
 from random import choice
 import sys
+from time import time, sleep
 
 sys.path.append(".")
+
+s = time()
 
 with open(argv[1]) as f:
     data = json.load(f)
@@ -24,6 +27,23 @@ else:
     print("Expected request type (i, l) as second argument.")
     exit(1)
 
+stop_at = None
+
+try:
+    stop_at = int(argv[3])
+except IndexError:
+    pass
+
+delay = None
+
+try:
+    delay = int(argv[4])
+except IndexError:
+    pass
+
+if delay is not None and s + delay > time():
+    sleep(delay - (time() - s))
+
 failed_req = 0
 total_req = 0
 
@@ -39,5 +59,9 @@ for event in data:
         failed_req += 1
     total_req += 1
 
-    print("\rTried {}/{} keys; Fail percentage: {:4f}%".format(total_req, len(data),
+    print("\rTried {}/{} keys; Fail percentage: {:4f}%".format(total_req, len(data) if stop_at is None or stop_at >
+                                                                                       len(data) else stop_at,
                                                                failed_req * 100 / total_req) + 20 * " ", end="")
+
+    if total_req == stop_at:
+        break
