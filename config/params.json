@@ -1,6 +1,6 @@
 {
   "seed_server": {
-    "ip": "",
+    "ip": "192.168.1.15",
     "port": 8000,
     "attempt_limit": 4
   },
@@ -14,6 +14,7 @@
   },
   "net": {
     "timeout": 5,
+    "connection_lifespan": 60,
     "data_size": 8192
   },
   "logging": {
@@ -26,4 +27,3 @@
     "percentage_to_remove": 50
   }
 }
-

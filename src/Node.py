@@ -1,5 +1,4 @@
 import json
-import socket
 import time
 from hashlib import sha1
 import random
@@ -12,6 +11,7 @@ from src.utils import log
 from src.Finger import Finger
 from src.rpc_handlers import REQUEST_MAP, STATUS_CONFLICT
 from src.Storage import Storage
+from src.ConnectionPool import ConnectionPool
 
 hash_func = sha1
 Finger.hash_func = hash_func
@@ -36,19 +36,16 @@ class Node:
         # create threads to listen for connections and to send stabilize signal
         self.event_queue = Queue()
 
-        # set address for server and client
-        self.SERVER_ADDR = ("", port) if port is not None else (utils.get_ip(), utils.params["host"]["server_port"])
+        # initialize a connection pool
+        self.conn_pool = ConnectionPool(port)
 
         # initialize finger table and successor list
-        self.finger_table = [Finger(self.SERVER_ADDR)] * utils.params["ring"]["bits"]
+        self.finger_table = [Finger(self.conn_pool.SERVER_ADDR)] * utils.params["ring"]["bits"]
         self.successor_list = []
         self.successor_list_index = -1
 
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
         # ID will be SHA-1(IP+port)
-        self.node_id = utils.get_id(self.SERVER_ADDR[0] + str(self.SERVER_ADDR[1]), hash_func)
+        self.node_id = utils.get_id(self.conn_pool.SERVER_ADDR[0] + str(self.conn_pool.SERVER_ADDR[1]), hash_func)
         log.debug(f"Initialized with node ID: {self.node_id}")
 
         self.predecessor = None
@@ -60,7 +57,7 @@ class Node:
         self.join_ring()
 
         self.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
-                      "add_node", {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1], "node_id": self.node_id})
+                      "add_node", {"ip": self.conn_pool.SERVER_ADDR[0], "port": self.conn_pool.SERVER_ADDR[1], "node_id": self.node_id}, hold_connection=False)
 
         self.listen()
 
@@ -120,7 +117,7 @@ class Node:
             # if this is the first node
             else:
                 log.info("No other nodes in the network")
-                self.predecessor = Finger(self.SERVER_ADDR)
+                self.predecessor = Finger(self.conn_pool.SERVER_ADDR)
                 for i in range(len(self.successor_list)):
                     self.successor_list[i] = copy(self.predecessor)
                 log.info("Initialized predecessor and sucessor list to self")
@@ -335,8 +332,8 @@ class Node:
                           f"{response['body']['node_id']}")
 
         # update successor's predecessor to be this node
-        self.ask_peer(self.finger_table[0].addr, "update_predecessor", {"ip": self.SERVER_ADDR[0],
-                                                                        "port": self.SERVER_ADDR[1],
+        self.ask_peer(self.finger_table[0].addr, "update_predecessor", {"ip": self.conn_pool.SERVER_ADDR[0],
+                                                                        "port": self.conn_pool.SERVER_ADDR[1],
                                                                         "node_id": self.node_id})
         log.debug("Asked successor to make this node its predecessor")
 
@@ -430,7 +427,7 @@ class Node:
         log.debug(f"Finding successor for ID: {key_id}")
         # if this is the only node in the network
         if self.finger_table[0].node_id == self.node_id:
-            return self.SERVER_ADDR[0], self.SERVER_ADDR[1], self.node_id
+            return self.conn_pool.SERVER_ADDR[0], self.conn_pool.SERVER_ADDR[1], self.node_id
 
         current_node = self.find_predecessor(key_id)
         if not current_node:
@@ -449,7 +446,7 @@ class Node:
         :return: tuple of (ID, port), or None if lookup failed
         """
         log.debug(f"Finding predecessor for ID: {key_id}")
-        current_node = Finger(self.SERVER_ADDR, self.node_id)
+        current_node = Finger(self.conn_pool.SERVER_ADDR, self.node_id)
         successor_id = self.finger_table[0].node_id
 
         # keep fallback fingers in case first returned finger is dead
@@ -531,9 +528,9 @@ class Node:
 
                 return fingers
 
-        return [Finger(self.SERVER_ADDR, self.node_id)]
+        return [Finger(self.conn_pool.SERVER_ADDR, self.node_id)]
 
-    def ask_peer(self, peer_addr, req_type, body_dict, pre_request=False):
+    def ask_peer(self, peer_addr, req_type, body_dict, pre_request=False, hold_connection=True):
         """
         Makes request to peer, sending request_msg
         Releases writer lock if it is enabled, so RPCs can be handled while waiting for response
@@ -551,27 +548,11 @@ class Node:
         request_msg = utils.create_request({"type": req_type}, body_dict)
 
         # if request is on this node, call RPC handler directly
-        if peer_addr == self.SERVER_ADDR:
+        if peer_addr == self.conn_pool.SERVER_ADDR:
             data = REQUEST_MAP[req_type](self, body_dict)
         # else, make request for RPC
         else:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-                client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                client.settimeout(utils.params["net"]["timeout"])
-                try:
-                    client.connect(peer_addr)
-                    enc_request_msg = request_msg.encode()
-                    if pre_request:
-                        pre_req_msg = utils.create_request({"type": "size"}, {"data_size": len(enc_request_msg)})
-                        # using $ as delimiter to identify pre-requests
-                        pre_req_msg = "$" + pre_req_msg + "$"
-                        client.sendall(pre_req_msg.encode())
-                    client.sendall(enc_request_msg)
-                    data = client.recv(utils.params["net"]["data_size"]).decode()
-                except (socket.error, socket.timeout):
-                    if w_mode:
-                        self.stabilize_mutex.w_enter()
-                    return None
+            data = self.conn_pool.send(peer_addr, request_msg, pre_request, hold_connection)
 
         if w_mode:
             self.stabilize_mutex.w_enter()
@@ -586,25 +567,7 @@ class Node:
         Gets an existing node from seed server
         :return: tuple of (IP, port)
         """
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.settimeout(utils.params["net"]["timeout"])
-            for i in range(utils.params["seed_server"]["attempt_limit"]):
-                try:
-                    client.connect((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]))
-                    break
-                except (socket.error, socket.timeout):
-                    log.info(f"Failed to connect to seed server, retrying... "
-                             f"{i + 1}/{utils.params['seed_server']['attempt_limit']}")
-                    time.sleep(2)
-            else:
-                log.critical("Connection to seed failed (attempt limit reached)")
-                exit(1)
-            client.sendall(utils.create_request({"type": "get_seed"},
-                                                {"ip": self.SERVER_ADDR[0], "port": self.SERVER_ADDR[1],
-                                                 "node_id": self.node_id}).encode())
-            data = json.loads(client.recv(utils.params["net"]["data_size"]).decode())
-
-        return data
+        return self.conn_pool.get_seed(self.node_id)
 
     def listen(self):
         """
@@ -614,14 +577,11 @@ class Node:
         Writer thread: writes all data to the object; any other thread that needs to write data passes it to the queue
         :return: None
         """
-        log.info(f"Starting node on {self.SERVER_ADDR[0]}:{self.SERVER_ADDR[1]}")
-        # bind server to IP
-        self.server.bind(self.SERVER_ADDR)
-        self.server.listen()
+        log.info(f"Starting node on {self.conn_pool.SERVER_ADDR[0]}:{self.conn_pool.SERVER_ADDR[1]}")
 
         # accept incoming connections
-        connection_listener = threading.Thread(target=self.accept_connections,
-                                               args=(self.server, self))
+        connection_listener = threading.Thread(target=self.handle_connections,
+                                               args=(self,))
         connection_listener.name = "Connection Listener"
         connection_listener.daemon = True
 
@@ -649,6 +609,7 @@ class Node:
                     break
                 self.fix_successor_list()
                 self.fix_fingers()
+                self.conn_pool.cleanup_outgoing()
             # if data is function, call it to update state in main thread
             elif callable(data):
                 data(self)
@@ -661,76 +622,55 @@ class Node:
 
     # Thread Methods
     @staticmethod
-    def accept_connections(server, node):
+    def handle_connections(node):
         """
-        Accepts a new connection on the passed socket and starts a new thread to handle it
-        :param server: the socket
-        :param node: the node
+        Handles all incoming connections
+        :param node: the node on which to call the method
         :return: None
         """
         while True:
-            # wait for new connection
-            conn_details = server.accept()
-            log.info(f"Got new connection from: {conn_details[1]}")
-
-            # start new thread to handle connection
-            connection_handler = threading.Thread(target=Node.handle_connection, args=(node, conn_details))
-            connection_handler.name = f"{conn_details[1]} Handler"
-            connection_handler.start()
+            node.conn_pool.select_incoming(lambda conn, addr: Node.handle_response(node, conn, addr))
 
     @staticmethod
-    def handle_connection(node, conn_details):
-        """
-        Handles existing connection until it closes
-        :param node: the node on which to call the method
-        :param conn_details: connection details (connection, address)
-        :return: None
-        """
-        connection, address = conn_details
+    def handle_response(node, connection, data):
+        # if $ is first character, pre_request is contained
+        if data[0] == "$":
+            # split to ['', pre_request, main_request]
+            data = data.split("$")
+            # pre-request is the first part of the received data
+            pre_request = data[1]
+            pre_request = json.loads(pre_request)
 
-        with connection:
-            data = connection.recv(utils.params["net"]["data_size"]).decode()
-            if not data:
+            data_size = pre_request["body"]["data_size"]
+
+            # anything received after is part of the main request
+            main_request = "".join(data[2:])
+            size_received = len(main_request.encode())
+
+            # data might be large chunk, so read in batches
+            while size_received < data_size:
+                next_data = connection.recv(utils.params["net"]["data_size"])
+                size_received += len(next_data)
+                main_request += next_data.decode()
+
+            data = main_request
+
+        data = json.loads(data)
+
+        # ensure all expected arguments have been sent
+        for arg in utils.EXPECTED_REQUEST[data["header"]["type"]]:
+            if arg not in data["body"]:
                 return
 
-            # if $ is first character, pre_request is contained
-            if data[0] == "$":
-                # split to ['', pre_request, main_request]
-                data = data.split("$")
-                # pre-request is the first part of the received data
-                pre_request = data[1]
-                pre_request = json.loads(pre_request)
+        log.debug(f"Got RPC call of type: {data['header']['type']}")
 
-                data_size = pre_request["body"]["data_size"]
+        # get mutex so main thread doesn't change object data during RPC
+        node.stabilize_mutex.r_enter()
+        # select RPC handler according to RPC type
+        response = REQUEST_MAP[data["header"]["type"]](node, data["body"])
+        node.stabilize_mutex.r_leave()
 
-                # anything received after is part of the main request
-                main_request = "".join(data[2:])
-                size_received = len(main_request.encode())
-
-                # data might be large chunk, so read in batches
-                while size_received < data_size:
-                    next_data = connection.recv(utils.params["net"]["data_size"])
-                    size_received += len(next_data)
-                    main_request += next_data.decode()
-
-                data = main_request
-
-            data = json.loads(data)
-
-            # ensure all expected arguments have been sent
-            for arg in utils.EXPECTED_REQUEST[data["header"]["type"]]:
-                if arg not in data["body"]:
-                    return
-
-            log.debug(f"Got RPC call of type: {data['header']['type']}")
-
-            # get mutex so main thread doesn't change object data during RPC
-            node.stabilize_mutex.r_enter()
-            # select RPC handler according to RPC type
-            response = REQUEST_MAP[data["header"]["type"]](node, data["body"])
-            node.stabilize_mutex.r_leave()
-
-            connection.sendall(response.encode())
+        connection.sendall(response.encode())
 
     @staticmethod
     def stabilize_timer(event_queue, delay):
