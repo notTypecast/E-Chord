@@ -46,6 +46,8 @@ class Node:
 
         # ID will be SHA-1(IP+port)
         self.node_id = utils.get_id(self.conn_pool.SERVER_ADDR[0] + str(self.conn_pool.SERVER_ADDR[1]), hash_func)
+        utils.logging.basicConfig(format=f"%(threadName)s:{self.node_id}-%(levelname)s: %(message)s",
+                    level=utils.environ.get("LOGLEVEL", utils.params["logging"]["level"]))
         log.debug(f"Initialized with node ID: {self.node_id}")
 
         self.predecessor = None
@@ -90,7 +92,7 @@ class Node:
                         # tell seed server that seed node has died
                         self.ask_peer((utils.params["seed_server"]["ip"], utils.params["seed_server"]["port"]),
                                       "dead_node", {"ip": data["body"]["ip"], "port": data["body"]["port"],
-                                                    "node_id": data["body"]["node_id"]})
+                                                    "node_id": data["body"]["node_id"]}, hold_connection=False)
                         seed_dead = True
                         break
 
@@ -491,6 +493,9 @@ class Node:
                 else:
                     # get current_node's successor
                     response = self.ask_peer(current_node.addr, "get_successor", {})
+                    # if current node does not respond, lookup fails
+                    if not response:
+                        return None
                     current_node = Finger((response["body"]["ip"], response["body"]["port"]),
                                           response["body"]["node_id"])
                     # ask successor for its successor
@@ -633,6 +638,13 @@ class Node:
 
     @staticmethod
     def handle_response(node, connection, data):
+        """
+        Handler function to be called when a message is received
+        Passed as lambda to ConnectionPool, including the node object
+        :param node: the node on which to call the method
+        :param connection: the connection object (passed by ConnectionPool)
+        :param data: the data received (passed by ConnectionPool)
+        """
         # if $ is first character, pre_request is contained
         if data[0] == "$":
             # split to ['', pre_request, main_request]
@@ -647,11 +659,14 @@ class Node:
             main_request = "".join(data[2:])
             size_received = len(main_request.encode())
 
+            connection.setblocking(True)
             # data might be large chunk, so read in batches
             while size_received < data_size:
                 next_data = connection.recv(utils.params["net"]["data_size"])
                 size_received += len(next_data)
                 main_request += next_data.decode()
+
+            connection.setblocking(False)
 
             data = main_request
 

@@ -39,8 +39,6 @@ EXPECTED_REQUEST = {
 with open("config/params.json") as f:
     params = json.load(f)
 
-logging.basicConfig(format="%(threadName)s-%(levelname)s: %(message)s",
-                    level=environ.get("LOGLEVEL", params["logging"]["level"]))
 log = logging.getLogger(__name__)
 
 log.info("Loaded params")

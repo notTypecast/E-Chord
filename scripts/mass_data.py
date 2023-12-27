@@ -65,3 +65,5 @@ for event in data:
 
     if total_req == stop_at:
         break
+
+print()

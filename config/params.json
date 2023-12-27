@@ -13,7 +13,7 @@
     "stabilize_delay": 3
   },
   "net": {
-    "timeout": 5,
+    "timeout": 10,
     "connection_lifespan": 60,
     "data_size": 8192
   },
@@ -22,7 +22,7 @@
   },
   "testing": {
     "initial_port": 9150,
-    "total_nodes": 400,
+    "total_nodes": 100,
     "stabilize_wait_period": 60,
     "percentage_to_remove": 50
   }

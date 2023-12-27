@@ -16,3 +16,5 @@ while total_removed * 100 / len(node_details) < utils.params["testing"]["percent
         total_nodes.remove(n)
         total_removed += 1
         print(f"\rTotal removed: {total_removed}" + " " * 20, end="")
+
+print()
