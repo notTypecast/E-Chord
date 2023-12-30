@@ -672,6 +672,10 @@ class Node:
 
         data = json.loads(data)
 
+        # ensure request type exists
+        if data["header"]["type"] not in utils.EXPECTED_REQUEST:
+            return
+
         # ensure all expected arguments have been sent
         for arg in utils.EXPECTED_REQUEST[data["header"]["type"]]:
             if arg not in data["body"]:
