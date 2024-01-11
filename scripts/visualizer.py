@@ -150,7 +150,10 @@ def ask_peer(peer_addr, req_type, body_dict, return_json=True):
     return data if not return_json else json.loads(data)
 
 
-ports = range(params["testing"]["initial_port"], params["testing"]["initial_port"] + params["testing"]["total_nodes"])
+ports = range(
+    params["testing"]["initial_port"],
+    params["testing"]["initial_port"] + params["testing"]["total_nodes"],
+)
 while True:
     allkeys = 0
     for port in ports:
@@ -189,14 +192,20 @@ while True:
     l = sorted(list(nodes), key=lambda key: key[1])[::-1]
     for i in range(len(l)):
         try:
-            ALL.append([
-                f"{l[len(l) - i - 1][1]} -> {nodes[l[len(l) - i - 1]]}",
-                f"{l[i][1]} <- {nodes_p[l[i]]}",
-                f"{l[len(l) - i - 1][1]}: {total_keys[l[len(l) - i - 1]]}"
-            ])
+            ALL.append(
+                [
+                    f"{l[len(l) - i - 1][1]} -> {nodes[l[len(l) - i - 1]]}",
+                    f"{l[i][1]} <- {nodes_p[l[i]]}",
+                    f"{l[len(l) - i - 1][1]}: {total_keys[l[len(l) - i - 1]]}",
+                ]
+            )
 
-            stable_nodes += 1 if (nodes[l[len(l) - i - 1]] == l[(len(l) - i - 2) % len(l)][1]) & \
-                                 (nodes_p[l[i]] == l[(i + 1) % len(l)][1]) else 0
+            stable_nodes += (
+                1
+                if (nodes[l[len(l) - i - 1]] == l[(len(l) - i - 2) % len(l)][1])
+                & (nodes_p[l[i]] == l[(i + 1) % len(l)][1])
+                else 0
+            )
         except KeyError:
             pass
 
@@ -204,7 +213,7 @@ while True:
     print(table)
     print(f"Total keys: {allkeys}")
     try:
-        stability = stable_nodes/len(l)*100
+        stability = stable_nodes / len(l) * 100
     except ZeroDivisionError:
         stability = 100
     print("Stability: {:.2f}%".format(stability))

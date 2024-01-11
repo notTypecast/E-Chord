@@ -1,5 +1,3 @@
-
-
 class Storage:
     """
     Storage class

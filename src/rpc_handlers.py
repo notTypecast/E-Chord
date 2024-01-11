@@ -20,7 +20,9 @@ REQUEST_MAP = {
     "get_successor": lambda n, body: get_successor(n),
     "get_predecessor": lambda n, body: get_predecessor(n),
     "find_successor": lambda n, body: find_successor(n, body),
-    "get_closest_preceding_finger": lambda n, body: get_closest_preceding_finger(n, body),
+    "get_closest_preceding_finger": lambda n, body: get_closest_preceding_finger(
+        n, body
+    ),
     "get_prev_successor_list": lambda n, body: get_prev_successor_list(n),
     "poll": lambda n, body: poll(),
     "update_predecessor": lambda n, body: update_predecessor(n, body),
@@ -32,14 +34,31 @@ REQUEST_MAP = {
     "find_key": lambda n, body: find_key(n, body),
     "find_and_store_key": lambda n, body: find_and_store_key(n, body),
     "find_and_delete_key": lambda n, body: find_and_delete_key(n, body),
-    "leave_ring": lambda n, body: leave_ring(n),
+    "debug_leave_ring": lambda n, body: debug_leave_ring(n),
     "debug_pred": lambda n, body: debug_pred(n),
     "debug_succ_list": lambda n, body: debug_succ_list(n),
     "debug_finger_table": lambda n, body: debug_finger_table(n),
     "debug_storage": lambda n, body: debug_storage(n),
     "debug_fail": lambda n, body: debug_fail(n),
-    "debug_get_total_keys": lambda n, body: debug_get_total_keys(n)
+    "debug_get_total_keys": lambda n, body: debug_get_total_keys(n),
 }
+
+
+def debug_leave_ring(n):
+    """
+    Tells node n to leave the ring
+    :param n: the node
+    :return: None
+    """
+
+    def leave(node):
+        node.leaving = True
+
+    n.event_queue.put(1)
+    n.event_queue.put(leave)
+
+    resp_header = {"status": STATUS_OK}
+    return utils.create_request(resp_header, {})
 
 
 def debug_pred(n):
@@ -54,7 +73,7 @@ def debug_pred(n):
         print("Predecessor is: ")
         print(f"Addr: {n.predecessor.addr} with ID: {n.predecessor.node_id}")
     else:
-            print("There is no predecessor")
+        print("There is no predecessor")
     print("--------------------------------")
     resp_header = {"status": STATUS_OK}
     return utils.create_request(resp_header, {})
@@ -136,8 +155,11 @@ def get_successor(n):
     :return: string of response
     """
     resp_header = {"status": STATUS_OK}
-    resp_body = {"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1],
-                 "node_id": n.finger_table[0].node_id}
+    resp_body = {
+        "ip": n.finger_table[0].addr[0],
+        "port": n.finger_table[0].addr[1],
+        "node_id": n.finger_table[0].node_id,
+    }
 
     return utils.create_request(resp_header, resp_body)
 
@@ -197,7 +219,9 @@ def get_closest_preceding_finger(n, body):
     # return fingers and if successor of current node is among them
     resp_body = {"fingers": [], "contains_successor": n.finger_table[0] in fingers}
     for finger in fingers:
-        resp_body["fingers"].append({"ip": finger.addr[0], "port": finger.addr[1], "node_id": finger.node_id})
+        resp_body["fingers"].append(
+            {"ip": finger.addr[0], "port": finger.addr[1], "node_id": finger.node_id}
+        )
 
     return utils.create_request(resp_header, resp_body)
 
@@ -210,10 +234,17 @@ def get_prev_successor_list(n):
     :return: string of response
     """
     resp_header = {"status": STATUS_OK}
-    prev_successor_list = [{"ip": n.finger_table[0].addr[0], "port": n.finger_table[0].addr[1],
-                            "node_id": n.finger_table[0].node_id}]
+    prev_successor_list = [
+        {
+            "ip": n.finger_table[0].addr[0],
+            "port": n.finger_table[0].addr[1],
+            "node_id": n.finger_table[0].node_id,
+        }
+    ]
     for succ in n.successor_list[:-1]:
-        prev_successor_list.append({"ip": succ.addr[0], "port": succ.addr[1], "node_id": succ.node_id})
+        prev_successor_list.append(
+            {"ip": succ.addr[0], "port": succ.addr[1], "node_id": succ.node_id}
+        )
     resp_body = {"successor_list": prev_successor_list}
 
     return utils.create_request(resp_header, resp_body)
@@ -257,7 +288,11 @@ def find_and_store_key(n, body):
     :param body: the request body
     :return: string of response
     """
-    resp_header = {"status": STATUS_OK if n.find_and_store_key(body["key"], body["value"]) else STATUS_NOT_FOUND}
+    resp_header = {
+        "status": STATUS_OK
+        if n.find_and_store_key(body["key"], body["value"])
+        else STATUS_NOT_FOUND
+    }
 
     return utils.create_request(resp_header, {})
 
@@ -269,7 +304,9 @@ def find_and_delete_key(n, body):
     :param body: the request body
     :return: string of response
     """
-    resp_header = {"status": STATUS_OK if n.find_and_delete_key(body["key"]) else STATUS_NOT_FOUND}
+    resp_header = {
+        "status": STATUS_OK if n.find_and_delete_key(body["key"]) else STATUS_NOT_FOUND
+    }
 
     return utils.create_request(resp_header, {})
 
@@ -299,12 +336,16 @@ def update_predecessor(n, body):
     :param body: body of request
     :return: string of response
     """
+
     # function to be run by main thread to update data
     def update(node):
         node.predecessor = Finger((body["ip"], body["port"]), body["node_id"])
         # if move fails, do nothing (keys are kept on this node)
         node.move_keys_to_predecessor()
-    if not n.predecessor or utils.is_between_clockwise(body["node_id"], n.predecessor.node_id, n.node_id):
+
+    if not n.predecessor or utils.is_between_clockwise(
+        body["node_id"], n.predecessor.node_id, n.node_id
+    ):
         n.event_queue.put(update)
 
     resp_header = {"status": STATUS_OK}
@@ -317,8 +358,10 @@ def clear_predecessor(n):
     :param n: node on which to call clear_predecessor
     :return: string of response
     """
+
     def clear(node):
         node.predecessor = None
+
     n.event_queue.put(clear)
 
     resp_header = {"status": STATUS_OK}
@@ -332,9 +375,11 @@ def batch_store_keys(n, body):
     :param body: the request body
     :return: string of response
     """
+
     def store(node):
         for k_dict in body["keys"]:
             node.storage.add_key(k_dict["key"], k_dict["value"], k_dict["key_id"])
+
     n.event_queue.put(store)
 
     resp_header = {"status": STATUS_OK}
@@ -348,8 +393,10 @@ def store_key(n, body):
     :param body: the request body
     :return: string of response
     """
+
     def store(node):
         node.storage.add_key(body["key"], body["value"], body["key_id"])
+
     n.event_queue.put(store)
 
     resp_header = {"status": STATUS_OK}
@@ -363,24 +410,13 @@ def delete_key(n, body):
     :param body: the request body
     :return: string of response
     """
+
     def remove(node):
         del node.storage[body["key"]]
+
     n.event_queue.put(remove)
 
-    resp_header = {"status": STATUS_OK if body["key"] in n.storage else STATUS_NOT_FOUND}
-    return utils.create_request(resp_header, {})
-
-
-def leave_ring(n):
-    """
-    Tells node n to leave the ring
-    :param n: the node
-    :return: None
-    """
-    def leave(node):
-        node.leaving = True
-    n.event_queue.put(1)
-    n.event_queue.put(leave)
-
-    resp_header = {"status": STATUS_OK}
+    resp_header = {
+        "status": STATUS_OK if body["key"] in n.storage else STATUS_NOT_FOUND
+    }
     return utils.create_request(resp_header, {})

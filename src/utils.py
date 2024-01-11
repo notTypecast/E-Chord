@@ -19,20 +19,20 @@ EXPECTED_REQUEST = {
     "poll": (),
     "update_predecessor": ("ip", "port", "node_id"),
     "clear_predecessor": (),
-    "batch_store_keys": ("keys", ),
+    "batch_store_keys": ("keys",),
     "store_key": ("key", "value", "key_id"),
     "delete_key": ("key",),
     "lookup": ("key",),
     "find_key": ("key",),
     "find_and_store_key": ("key", "value"),
     "find_and_delete_key": ("key",),
-    "leave_ring": (),
+    "debug_leave_ring": (),
     "debug_pred": (),
     "debug_succ_list": (),
     "debug_finger_table": (),
     "debug_storage": (),
     "debug_fail": (),
-    "debug_get_total_keys": ()
+    "debug_get_total_keys": (),
 }
 
 # get configuration settings from params.json
@@ -51,10 +51,10 @@ def get_ip():
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        s.connect(('10.255.255.255', 1))
+        s.connect(("10.255.255.255", 1))
         ip = s.getsockname()[0]
     except (socket.error, socket.timeout):
-        ip = '127.0.0.1'
+        ip = "127.0.0.1"
     finally:
         s.close()
     return ip
@@ -84,7 +84,7 @@ def get_id(key, hash_func):
 
     ring_size = params["ring"]["bits"]
     # truncate to necessary number of bytes and get ID
-    trunc_size = math.ceil(ring_size/8)
+    trunc_size = math.ceil(ring_size / 8)
     res_id = int.from_bytes(hash_func(key).digest()[-trunc_size:], "big")
 
     return res_id % 2**ring_size
@@ -105,7 +105,9 @@ def ask_peer(peer_addr, req_type, body_dict, custom_timeout=None):
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
         client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        client.settimeout(custom_timeout if custom_timeout is not None else params["net"]["timeout"])
+        client.settimeout(
+            custom_timeout if custom_timeout is not None else params["net"]["timeout"]
+        )
         try:
             client.connect(peer_addr)
             client.sendall(request_msg.encode())
@@ -129,8 +131,11 @@ def is_between_clockwise(x, lower, upper, inclusive_upper=False):
     :param inclusive_upper: determines if upper should be inclusive or not
     :return: True or False
     """
-    return (lower < upper and lower < x and (x <= upper if inclusive_upper else x < upper)) or \
-           (upper <= lower and ((x <= upper if inclusive_upper else x < upper) or x > lower))
+    return (
+        lower < upper and lower < x and (x <= upper if inclusive_upper else x < upper)
+    ) or (
+        upper <= lower and ((x <= upper if inclusive_upper else x < upper) or x > lower)
+    )
 
 
 def place_in_successor_list(current_list, response_body, lower):
@@ -147,17 +152,20 @@ def place_in_successor_list(current_list, response_body, lower):
         if succ.node_id == new_node_id:
             break
         if is_between_clockwise(new_node_id, lower, succ.node_id):
-            current_list.insert(i, Finger((response_body["ip"], response_body["port"]), new_node_id))
+            current_list.insert(
+                i, Finger((response_body["ip"], response_body["port"]), new_node_id)
+            )
 
 
 def next_power_of_2(num):
-    return 2**math.ceil(math.log(num, 2))
+    return 2 ** math.ceil(math.log(num, 2))
 
 
 class RWLock:
     """
     Implements a readers-writer block with no priorities
     """
+
     def __init__(self):
         """
         Initializes two mutexes (reader and writer mutex) and the reader counter

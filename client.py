@@ -1,22 +1,21 @@
+import readline
 from src import utils
 from sys import argv
 
-HELP_MSG = "Available commands:\n" \
-           ">lookup [key]\n" \
-           ">insert [key] [value]\n" \
-           ">delete [key]\n" \
-           ">leave"
+HELP_MSG = (
+    "Available commands:\n"
+    ">lookup [key]\n"
+    ">insert [key] [value]\n"
+    ">delete [key]\n"
+    ">leave"
+)
 
 command_help = {
-    "lookup": "Usage: lookup [key]\n"
-              "Finds value of given key in E-Chord.",
-    "insert": "Usage: insert [key] [value]\n"
-              "Inserts pair (key, value) into E-Chord.",
-    "delete": "Usage: delete [key]\n"
-              "Deletes key from E-Chord.",
-    "leave": "Usage: leave\n"
-             "Tells node to leave ring",
-    "help": HELP_MSG
+    "lookup": "Usage: lookup [key]\n" "Finds value of given key in E-Chord.",
+    "insert": "Usage: insert [key] [value]\n" "Inserts pair (key, value) into E-Chord.",
+    "delete": "Usage: delete [key]\n" "Deletes key from E-Chord.",
+    "leave": "Usage: leave\n" "Tells node to leave ring",
+    "help": HELP_MSG,
 }
 
 
@@ -43,7 +42,11 @@ def run_client(peer_addr):
                 print(command_help["insert"])
                 continue
 
-            response = utils.ask_peer(peer_addr, "find_and_store_key", {"key": command[1], "value": command[2]})
+            response = utils.ask_peer(
+                peer_addr,
+                "find_and_store_key",
+                {"key": command[1], "value": command[2]},
+            )
 
             if not response or response["header"]["status"] not in range(200, 300):
                 print("Could not store key.")
@@ -56,7 +59,9 @@ def run_client(peer_addr):
                 print(command_help["delete"])
                 continue
 
-            response = utils.ask_peer(peer_addr, "find_and_delete_key", {"key": command[1]})
+            response = utils.ask_peer(
+                peer_addr, "find_and_delete_key", {"key": command[1]}
+            )
 
             if not response or response["header"]["status"] not in range(200, 300):
                 print("Could not delete key.")
