@@ -182,7 +182,7 @@ Welcome, Emily!
 <p>When communicating with an E-Chord network, we essentially need to talk to one of the nodes of the network. As such, we need to know the address of some node. If you've started the network yourself, you should know the addresses of the nodes within it, so use one of them.</p>
 <p>If you've used the scripts to create the network, open the <code>config/params.json</code> file. Under <code>testing</code>, you'll find the parameter <code>initial_port</code>. Its value is the port of the first node that was started by the script, incremented by 1 for each new node. As such, one possible address you can use is <code>localhost:[initial_port]</code>. If that one doesn't work, increment the port value by 1 and try again.</p>
 <p>Another way to find an active node in the network is simply by observing the output of the seed server. The seed server regularly polls nodes to confirm they're still there, so looking at its output, you'll find the addresses of recently polled nodes. Remember that an empty IP address string is equivalent to <code>localhost</code>.</p>
-<p>E-Chord nodes communicate using TCP sockets. Additionally, messages between nodes are all in JSON, and follow a specific format. For an in-depth explanation on how to structure your messages when communicating with the network, refer to <a href="/how-to-guides/communication">this guide</a> and the <a href="/reference/communication">equivalent reference guide</a>.</p>
+<p>E-Chord nodes communicate using TCP sockets. Additionally, messages between nodes are all in JSON, and follow a specific format. For an in-depth explanation on how to structure your messages when communicating with the network, refer to <a href="../../how-to-guides/communication">this guide</a> and the <a href="../../reference/communication">equivalent reference guide</a>.</p>
 <p>In order to simplify this process here, we will use an existing function. This function, called <code>ask_node</code>, connects to the node with the address we provide and makes a request of a certain type.</p>
 <pre><code class="language-python">import socket
 import json
@@ -314,7 +314,7 @@ Welcome, Emily!
 <p>If the E-Chord network you're using is simulated on one computer, you may also run the visualizer script at the <code>scripts</code> directory to view the nodes in the network and see which of them store the keys you insert.</p>
 <h3 id="conclusion">Conclusion</h3>
 <p>In this tutorial, you set up a simple program of your own, which communicates with an E-Chord network directly and uses it as its dictionary to store data. You made requests towards a node in the network and read its responses to achieve this.</p>
-<p>For a full list of requests and their expected responses, visit the <a href="/reference/communication">communication reference</a>.</p>
+<p>For a full list of requests and their expected responses, visit the <a href="../../reference/communication">communication reference</a>.</p>
               
             </div>
           </div><footer>

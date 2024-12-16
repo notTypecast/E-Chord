@@ -121,7 +121,7 @@
               
                 <h1 id="e-chord-an-implementation-of-chord">E-Chord: An implementation of Chord</h1>
 <p>E-Chord is an implementation of the Chord protocol. Specifically, we implement the version of Chord that utilizes stabilization routines.</p>
-<p>We refer to this version of Chord as asynchronous, as opposed to the synchronous version. This is because, as described in the <a href="/discussion/chord_2">previous discussion</a>, this version of the protocol allows a node to join and slowly build its pointers, as opposed to immediately blocking the network until all pointers can be updated.</p>
+<p>We refer to this version of Chord as asynchronous, as opposed to the synchronous version. This is because, as described in the <a href="../../discussion/chord_2">previous discussion</a>, this version of the protocol allows a node to join and slowly build its pointers, as opposed to immediately blocking the network until all pointers can be updated.</p>
 <h3 id="seed-server">Seed server</h3>
 <p>E-Chord uses a seed server to keep track of nodes in the network. This serves a few purposes. Mainly, a node asks the seed server for the address of another in order to join the network. Without the seed server, this would only be possible by using a fixed address for some node, which would likely be infeasible in most systems.</p>
 <p>Additionally, after a massive node failure, if a node is unable to locate any others through its pointers, it will ask the seed server for the address of a node in order to re-join the network. In practice, due to the types of pointers an E-Chord node holds, this situation is statistically impossible.</p>

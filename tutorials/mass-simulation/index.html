@@ -131,7 +131,7 @@
               
                 <h1 id="using-provided-scripts-to-simulate-a-large-e-chord-network-on-a-single-computer">Using provided scripts to simulate a large E-Chord network on a single computer</h1>
 <p>The purpose of this tutorial is to use scripts provided with E-Chord to set up a large E-Chord network. As in previous tutorials, the network will run on a single computer. As such, we refer to it as a simulation, rather than a real network.</p>
-<p>To follow along, you'll need to get both the seed server and the main E-Chord repositories. For more information on how to do this, refer to the <a href="/how-to-guides/setting-up">setting up guide</a>.</p>
+<p>To follow along, you'll need to get both the seed server and the main E-Chord repositories. For more information on how to do this, refer to the <a href="../../how-to-guides/setting-up">setting up guide</a>.</p>
 <h3 id="starting-the-seed-server">Starting the seed server</h3>
 <p>As usual, the first step to setting up an E-Chord network is executing the seed server. If you've done this before, feel free to repeat that process and skip this section.</p>
 <p>Open a terminal at the location of the seed server and execute the command <code>python3 server.py</code>. You should see output similar to the following:</p>
@@ -173,7 +173,7 @@ MainThread-INFO: Starting node on 192.168.1.12:8000
   }
 }
 </code></pre>
-<p>If these look overwhelming, don't worry. We'll only use a few here, so you can ignore most of these. For a complete list of parameters and their function, refer to the <a href="/reference/parameters/#node-parameters">corresponding reference guide</a>.</p>
+<p>If these look overwhelming, don't worry. We'll only use a few here, so you can ignore most of these. For a complete list of parameters and their function, refer to the <a href="../../reference/parameters/#node-parameters">corresponding reference guide</a>.</p>
 <p>The first parameters we'll need to change can be seen first, under <code>seed_server</code>. We'll need to change the values for <code>ip</code> and <code>port</code> to the values we got when we started the seed server. The commonly used format for these is <code>[ip address]:[port]</code>, so replace the default IP address and port with the ones your seed server is using.</p>
 <p>For instance, our seed server output was <code>192.168.1.12:8000</code>. Therefore, we set the IP address to 192.168.1.12, and the port to 8000, as seen above.</p>
 <p>The next set of parameters we'll concern ourselves with are those under <code>testing</code>. These are parameters that describe the function of the simulation scripts. Specifically, we'll change the value of the <code>total_nodes</code> parameter to 40. This parameter describes the number of nodes that will actually be created in our simulation. In other words, the number of simulated computers in our network.</p>
@@ -189,7 +189,7 @@ MainThread-INFO: Starting node on 192.168.1.12:8000
 <p>Wait and observe the visualizer. With time, you'll notice the stability percentage going up. If you look at individual nodes in the table, you'll find that more and more of them start pointing to the correct successor, the node under them in the table.</p>
 <p>Eventually, the network stability percentage should reach 100%. Once it does, you're ready to move on to the next step (in fact, you can even move on if your stability percentage is high, but not yet 100%).</p>
 <h3 id="inserting-data">Inserting data</h3>
-<p>For this part, we'll need some additional data, in JSON format. Specifically, we'll want a JSON file that consists of a JSON Object, containing multiple keys. If you already have a file with that format, you may use that. If not, you can use <a href="/sample_5MB.json">this randomly generated sample file</a>.</p>
+<p>For this part, we'll need some additional data, in JSON format. Specifically, we'll want a JSON file that consists of a JSON Object, containing multiple keys. If you already have a file with that format, you may use that. If not, you can use <a href="../../sample_5MB.json">this randomly generated sample file</a>.</p>
 <p>Open a new terminal window at the scripts directory and execute the command <code>python3 mass_data.py [filedir] i</code>. Replace <code>[filedir]</code> with the directory of the data file you're using (relative or absolute).</p>
 <p>If the script executes correctly, you will see the script slowly inserting data into the network. You may switch over to the visualizer as well, where you'll notice the total number of keys increasing, as well as various nodes starting to hold those keys.</p>
 <p>The <code>mass_data</code> script will also notify you of the failure percentage for the insertions. This is generally expected to be 0, but do not panic if it isn't! E-Chord is a distributed system and, as such, routing failures will always happen. In this case, the script will ignore keys that fail to be inserted, but in a real scenario, we would attempt to insert them again until we succeed.</p>
@@ -208,7 +208,7 @@ MainThread-INFO: Starting node on 192.168.1.12:8000
 ║  2358 -&gt; 2449  ║ 13662 &lt;- 13637 ║  2358: 115 ║
 ╠════════════════╬════════════════╬════════════╣
 </code></pre>
-<p>You'll find that the keys have been spread to multiple nodes, instead of all of them being saved in one. Pay attention to how the keys are distributed. On average, it will probably look like each node stores a similar number of keys, with the occasional extremes. A more careful look might, however, reveal that the number of keys stored in each node is somehow proportional to the distance between the node's ID and the previous node ID. The reason for this relates to the Chord protocol itself. For further analysis, visit the <a href="/discussion/chord_1">Chord protocol discussion</a>.</p>
+<p>You'll find that the keys have been spread to multiple nodes, instead of all of them being saved in one. Pay attention to how the keys are distributed. On average, it will probably look like each node stores a similar number of keys, with the occasional extremes. A more careful look might, however, reveal that the number of keys stored in each node is somehow proportional to the distance between the node's ID and the previous node ID. The reason for this relates to the Chord protocol itself. For further analysis, visit the <a href="../../discussion/chord_1">Chord protocol discussion</a>.</p>
 <p>At the bottom of the script, you'll get a sum of the total keys saved in the network:</p>
 <pre><code class="language-text">Total keys: 9808
 Stability: 100.00%

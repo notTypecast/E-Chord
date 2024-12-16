@@ -131,7 +131,7 @@ Resolving deltas: 100% (24/24), done.
 <p>If not, make sure <em>git</em> is installed on the system.</p>
 <p>Another way to get the repository is through GitHub's web interface itself. Above the repository's directory structure on the main page, you will find a button with the text <em>&lt;&gt; Code</em>. Click it, and choose the <em>Download ZIP</em> option. You should now have a ZIP file with the repository in it. Simply extract it at your location of choice.</p>
 <p>Once the repository has been cloned, open a terminal at its location. If you cloned the repository through the command line interface, using the command <code>cd E-Chord-Seed</code> directly after will suffice.</p>
-<p>Optionally, you can change the seed server parameters before starting the server. Open the <code>params.json</code> file. Here, you can change the server's port, which is 8000 by default. For a full list of parameters, refer to the <a href="/reference/parameters/#seed-server-parameters">parameter reference guide</a>.</p>
+<p>Optionally, you can change the seed server parameters before starting the server. Open the <code>params.json</code> file. Here, you can change the server's port, which is 8000 by default. For a full list of parameters, refer to the <a href="../../reference/parameters/#seed-server-parameters">parameter reference guide</a>.</p>
 <p>Once finished, enter the command <code>python3 server.py</code>. If nothing goes wrong, you should see the below output:</p>
 <pre><code class="language-text">MainThread-INFO: Loaded params
 MainThread-INFO: Starting node on [your local IP]:[your PORT]
@@ -139,7 +139,7 @@ MainThread-INFO: Starting node on [your local IP]:[your PORT]
 <p>You have now successfully set up the Seed Server!</p>
 <h3 id="nodes">Nodes</h3>
 <p>The next part is setting up the actual E-Chord network. On a computer you'd like to add to the network as a node, get the <a href="https://github.com/notTypecast/E-Chord">E-Chord</a> repository, similarly to how you previously downloaded the seed repository.</p>
-<p>There is just one step that must be completed before entering the network. Open the <code>config/params.json</code> file. There, you'll find various parameters about the network that can be customized. For a full list of them, refer to the <a href="/reference/parameters/#node-parameters">parameter reference guide</a>.</p>
+<p>There is just one step that must be completed before entering the network. Open the <code>config/params.json</code> file. There, you'll find various parameters about the network that can be customized. For a full list of them, refer to the <a href="../../reference/parameters/#node-parameters">parameter reference guide</a>.</p>
 <p>Under <code>"seed_server"</code>, you'll find the following parameters:</p>
 <pre><code class="language-text">&quot;seed_server&quot;: {
     &quot;ip&quot;: &quot;192.168.1.15&quot;,

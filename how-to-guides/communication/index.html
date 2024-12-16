@@ -135,7 +135,7 @@
 </code></pre>
 <p>The request header needs to contain a request type. <code>TYPE</code> is a string representing that type.</p>
 <p>Each request type has certain parameters that need to be included with it. Those should be placed in the request body, with their corresponding values.</p>
-<p>For a full list of available request types and their required parameters, refer to <a href="/reference/communication/#requests">the communication reference guide</a>.</p>
+<p>For a full list of available request types and their required parameters, refer to <a href="../../reference/communication/#requests">the communication reference guide</a>.</p>
 <p>Note that only the first few request types, as pointed out by the reference guide, are meant for ordinary use. Others are debugging related, while the rest consist of internal requests that should normally only be used between the nodes themselves. Use those at your own risk.</p>
 <h3 id="responses">Responses</h3>
 <p>E-Chord refers to anything returned to the sender after a request as a response. Responses generally follow the same format as a request:</p>
@@ -151,7 +151,7 @@
 <p>As such, responses are also serialized JSON objects.</p>
 <p>The response header always contains a status. <code>STATUS</code> is an integer, representing that status.</p>
 <p>If the request that triggered this response asked for data and data retrieval was successful according to the status, that data will be contained in the response body.</p>
-<p>The reference guide mentioned before also contains <a href="/reference/communication/#responses">the expected response(s)</a> for any given request type.</p>
+<p>The reference guide mentioned before also contains <a href="../../reference/communication/#responses">the expected response(s)</a> for any given request type.</p>
 <p>Once you get a response to your request, you are generally free to close the connection.</p>
               
             </div>

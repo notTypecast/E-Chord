@@ -123,7 +123,7 @@
               
                 <h1 id="setting-up-a-three-node-e-chord-network-on-a-single-computer">Setting up a three node E-Chord network on a single computer</h1>
 <p>In this tutorial, we will set up an E-Chord network consisting of three nodes. The entire network, including the seed server, will run on a single computer, only using the local network for communication.</p>
-<p>To do this, we'll need both the repository for the seed server and for the node. Start by cloning both of these repositories at a location of your choosing. For more information on how to do this, refer to the <a href="/how-to-guides/setting-up">setting up guide</a>.</p>
+<p>To do this, we'll need both the repository for the seed server and for the node. Start by cloning both of these repositories at a location of your choosing. For more information on how to do this, refer to the <a href="../../how-to-guides/setting-up">setting up guide</a>.</p>
 <h3 id="starting-the-seed-server">Starting the seed server</h3>
 <p>As always, the first step is to start the seed server. Open a terminal at the seed server's location and use the <code>python3 server.py</code> command. The output should look something like this:</p>
 <pre><code class="language-text">MainThread-INFO: Loaded params
@@ -214,7 +214,7 @@ Stability: 100.00%
 <p>If the nodes aren't visible, make sure you're using ports in the visualizer's range. By default, this range is 9150 to 9250.</p>
 <p>You are now able to confirm that everything is indeed stable. Each node should have the next one as its successor, increasing in ID, until the last one, which connects to the first one again. The predecessors, of course, go in the opposite direction.</p>
 <h3 id="conclusion">Conclusion</h3>
-<p>If this is the case, then you have successfully created an E-Chord network on your computer! Note that even though this network runs in the exact same way as a regular network, it all happens locally on a single machine. For more information on the differences between this and an actual network, refer to <a href="/discussion/e-chord/#local-simulation">the E-Chord discussion</a>.</p>
+<p>If this is the case, then you have successfully created an E-Chord network on your computer! Note that even though this network runs in the exact same way as a regular network, it all happens locally on a single machine. For more information on the differences between this and an actual network, refer to <a href="../../discussion/e-chord/#local-simulation">the E-Chord discussion</a>.</p>
               
             </div>
           </div><footer>
