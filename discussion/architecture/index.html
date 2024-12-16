@@ -153,7 +153,7 @@
 <p>Imagine a node receiving many different requests at the same time. If we handled each of them individually in the listener thread, we'd have to handle them sequentially. Remember that handling a request might require making additional requests to other nodes, in a recursive manner. This is a problem, because what if the first request took a whole second to complete? That would mean the rest of the requests would need to wait in line before being handled.</p>
 <p>Instead, by starting a handler thread for each request, no request needs to wait for another to complete, in order to be handled. Requests that can be handled instantly (for example, a <code>poll</code> RPC) will be, whereas requests that might require more time (like a <code>find_key</code> RPC) won't block unrelated traffic.</p>
 <h3 id="shared-resources">Shared resources</h3>
-<p>This subsections describes the function of a mutex. You may skip to the next section if you are already familiar with it.</p>
+<p>This subsection describes the function of a mutex. You may skip to the next section if you are already familiar with it.</p>
 <p>Consider an integer with the value 0. Two threads both want to increment the value of that variable. Each thread runs the following code:</p>
 <pre><code class="language-python">x += 1
 </code></pre>
