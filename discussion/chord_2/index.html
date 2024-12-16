@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>The Chord protocol: locating the right node - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "The Chord protocol: locating the right node";
+        var mkdocs_page_input_path = "discussion/chord_2.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">The Chord protocol: locating the right node</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#routing-related-data-kept-by-nodes">Routing-related data kept by nodes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#searching-for-a-key">Searching for a key</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#joining-the-network-as-a-new-node">Joining the network as a new node</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#network-stabilization">Network stabilization</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#node-failures">Node failures</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Discussion</li>
+      <li class="breadcrumb-item active">The Chord protocol: locating the right node</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="the-chord-protocol-locating-the-right-node">The Chord protocol: locating the right node</h1>
+<p>Perhaps the hardest part of creating a DHT is being able to locate data that isn't saved locally, but rather on a different node. Each node needs to be able to determine the correct location of a key in the network, so that a pair can be saved to or retrieved from the network from anywhere.</p>
+<p>One simple solution for this would be to keep information about all nodes at a central location. However, this would make the system centralized and introduce a single point of failure. Here, we instead look for a solution that is decentralized, meaning no specific node's failure can cause the entire system to collapse.</p>
+<h3 id="routing-related-data-kept-by-nodes">Routing-related data kept by nodes</h3>
+<p>In order to be able to locate different nodes when necessary, nodes on the Chord network keep routing information. This consists of information about certain other nodes in the network.</p>
+<p>Specifically, each node keeps information about its successor, as well as an additional set of nodes, called the finger table. To create the finger table for a node <em>n</em>, we make a total of <em>r</em> clockwise jumps from <em>n</em>. The length of jump <em>i</em> is <em>2<sup>i - 1</sup></em>.</p>
+<p>As such, each jump will end up at a specific ID on the ring. We then find the node responsible for that ID. That node is either the node with the same ID, if it exists, or the next clockwise node after the ID, if it doesn't. We keep that node as finger <em>i</em>.</p>
+<p>The purpose of the finger table will be described later. Here, we should point out that the finger table allows for jumps of exponentially increasing size. This means that each node is likely to have information about other nodes that are roughly on the opposite side of the ring. Such information will allow us to shorten the total search steps required during routing.</p>
+<p>Each node also retains information about its predecessor.</p>
+<h3 id="searching-for-a-key">Searching for a key</h3>
+<p>Consider an active Chord network, consisting of various nodes. We know the address of some random node in the network, and we'd like to add some new data, or search for some existing data. In both cases, we first need to ask the node to locate the correct node for the ID of our data.</p>
+<p>We contact our node and provide it with the key and value we'd like to search for. The node hashes the key and gets an ID in hash space. Once the node has the ID, how can it determine which node in the network is responsible for that ID?</p>
+<p>The node responsible for the ID will be the ID's successor. That is, the first node met if we move clockwise from the ID. To find this successor, we need to first find its predecessor and then ask it for its successor. Since nodes keep information about successors, finding the predecessor is equivalent to finding the node in question.</p>
+<p>To find the predecessor, we use the following algorithm.</p>
+<ol>
+<li>Set the current node to this node.</li>
+<li>Check if the ID is contained between the current node and the current node's successor on the ring. If it is, return the current node.</li>
+<li>If it is not, find the node pointed to by the longest finger in the finger table of the current node, which appears to the left of our ID (counter-clockwise) on the ring. Set that node as the current node. Return to step 2.</li>
+</ol>
+<p>With this algorithm, we can determine which node is the predecessor to an ID. Once we have this, we simply ask that node for its successor. That node is the one responsible for the ID. We can then ask that node to either save the data, or return any data it might already have.</p>
+<h3 id="joining-the-network-as-a-new-node">Joining the network as a new node</h3>
+<p>You might assume that joining the network is a difficult process, because you'd need to accurately create the successor and finger table pointers. Yet, it turns out that when a node initially joins the network, there are only a few actions that must be completed.</p>
+<p>As with searching, to join the network, we must first know the address of some node in the network. This problem is solved by the seed server. Its purpose is to give us the address of some random node when asked. Once we obtain that address, we execute the following algorithm.</p>
+<ol>
+<li>Hash this computer's network address to get a node ID.</li>
+<li>Ask the seed node for the successor to that node ID.</li>
+<li>Set the node's successor to this node. Initialize the finger table, so they all point to this node.</li>
+<li>Inform the successor that this node is now its predecessor and ask it to move appropriate keys (those with an ID smaller than or equal to this node's) to this node.</li>
+</ol>
+<p>These steps are initially adequate. Although there are still various pointers that are now incorrect or have been invalidated, those will be fixed in time. How this happens is described in the next part.</p>
+<h3 id="network-stabilization">Network stabilization</h3>
+<p>The previous protocol works great if every node already has correct pointers for its successor and finger table. However, Chord is a distributed system with nodes joining and leaving constantly. Therefore, a process by which these pointers are kept up to date is necessary.</p>
+<p>To keep all pointers up to date, Chord uses a few periodic stabilization routines. These are functions that run every few seconds and ensure that some of the node's pointers are correct, or fix them if they aren't.</p>
+<p>These routines can vary based on implementation details. In general, there two main types. The first one corrects successor and predecessor pointers, while the second one corrects finger table pointers.</p>
+<p>The general idea for the former is that each node periodically asks its successor for its predecessor. If its predecessor is different than the node itself, we know a new node has joined between this node and its successor. In that case, we simply update this node's successor to that node.</p>
+<p>When it comes to keeping fingers up to date, there are various methods. The best ones periodically check for the successor to <em>n + 2<sup>i</sup></em>, where <em>i</em> represents the <em>i</em>-th finger, and update the finger table accordingly.</p>
+<p>Here, it should be noted that there is a version of Chord that does not use stabilization routines. Instead, when a node joins, the protocol attempts to correctly update all pointers for all existing nodes.</p>
+<p>This, however, causes massive network overhead for join operations and also cannot account for abrupt node failures. For this reason, most implementations will instead opt for the stabilization routine approach.</p>
+<h3 id="node-failures">Node failures</h3>
+<p>The advantage stabilization routines provide becomes even more obvious when dealing with node failures. Since nodes periodically check their pointers, if a node dies, others in the network will sooner or later determine this and update their pointers on their own.</p>
+<p>This means that we don't need to do anything else to deal with node failures. The network is self-stabilizing, so we only need to give it time to return to a stable state after nodes fail.</p>
+<p>Abrupt node failures, of course, will cause all data stored on a node to be lost. To avoid this, it is necessary to implement some sort of backup system, such that certain keys are not only stored on the successor node to their ID, but also on a few others, thus reducing the probability of data loss in case of node failure.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../chord_1/" class="btn btn-neutral float-left" title="The Chord protocol: a distributed hash space"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../e-chord/" class="btn btn-neutral float-right" title="E-Chord: An implementation of Chord">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../chord_1/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../e-chord/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

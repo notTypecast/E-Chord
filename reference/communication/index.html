@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Communication - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Communication";
+        var mkdocs_page_input_path = "reference/communication.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Communication</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#requests">Requests</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ordinary-requests">Ordinary requests</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#debugging-requests">Debugging requests</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#internal-requests">Internal requests</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#responses">Responses</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ordinary-requests_1">Ordinary requests</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#debugging-requests_1">Debugging requests</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#internal-requests_1">Internal requests</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">Communication</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="communication">Communication</h1>
+<p>Communicating with an active E-Chord network is done through TCP sockets. A request-response format is used. For more information, read the <a href="/how-to-guides/communication">communication guide</a>.</p>
+<p>Below is a comprehensive list of requests and equivalent responses.</p>
+<p>The format used to indicate the correct data types for request and response data is as follows. The data being displayed consist of key-value pairs for the value of the <code>body</code> field of a request/response. For each request/response, the data columns in the tables below contain each key name (as a string) and its corresponding value type. If <code>ANY</code> is used as a value type, it means the key can contain any type of value.</p>
+<p>If square brackets surround a value, that means a JSON array is expected. This can contain multiple instances of whichever types of data are contained within it.</p>
+<h3 id="requests">Requests</h3>
+<p>For a request to be valid, it must have a valid request type and contain the expected data in its body. </p>
+<h5 id="ordinary-requests">Ordinary requests</h5>
+<p>These are requests that are ordinarily used by a client outside the network.</p>
+<table>
+<thead>
+<tr>
+<th>Request Type</th>
+<th>Expected Data</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>find_key</code></td>
+<td><code>key</code>: <code>string</code></td>
+<td>Asks for the value for a key.</td>
+</tr>
+<tr>
+<td><code>find_and_store_key</code></td>
+<td><code>key</code>: <code>string</code> <br> <code>value</code>: <code>ANY</code></td>
+<td>Asks a node to locate the correct node and store <br> a pair.</td>
+</tr>
+<tr>
+<td><code>find_and_delete_key</code></td>
+<td><code>key</code>: <code>string</code></td>
+<td>Asks a node to locate the correct node and delete <br> a pair by key.</td>
+</tr>
+<tr>
+<td><code>poll</code></td>
+<td>-</td>
+<td>Polls a node, asking if it is alive. Normally used by <br> seed server, but may be used by other clients.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="debugging-requests">Debugging requests</h5>
+<p>These are requests that serve debugging purposes. It is not expected that these requests be used in ordinary function.</p>
+<table>
+<thead>
+<tr>
+<th>Request Type</th>
+<th>Expected Data</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>debug_leave_ring</code></td>
+<td>-</td>
+<td>Tells node to leave ring in a semi-ordinary fashion. This <br> consists of moving existing data to another appropriate <br   > node, but not notifying nodes beyond this.</td>
+</tr>
+<tr>
+<td><code>debug_pred</code></td>
+<td>-</td>
+<td>Tells node to output its predecessor's address and node ID.</td>
+</tr>
+<tr>
+<td><code>debug_succ_list</code></td>
+<td>-</td>
+<td>Tells node to output its successor list.</td>
+</tr>
+<tr>
+<td><code>debug_finger_table</code></td>
+<td>-</td>
+<td>Tells node to output its finger table.</td>
+</tr>
+<tr>
+<td><code>debug_storage</code></td>
+<td>-</td>
+<td>Tells node to output its storage. This includes all pairs <br> saved on the node.</td>
+</tr>
+<tr>
+<td><code>debug_fail</code></td>
+<td>-</td>
+<td>Tells node to abruptly fail. This consists of leaving the <br> network without performing any actions.</td>
+</tr>
+<tr>
+<td><code>debug_get_total_keys</code></td>
+<td>-</td>
+<td>Tells node to return the number of keys stored on it.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="internal-requests">Internal requests</h5>
+<p>These are requests used between nodes to ensure optimal network operation. These requests should almost never be used during ordinary function, since they could disrupt network operations. Use these at your own risk.</p>
+<table>
+<thead>
+<tr>
+<th>Request Type</th>
+<th>Expected Data</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get_successor</code></td>
+<td>-</td>
+<td>Asks a node for its successor.</td>
+</tr>
+<tr>
+<td><code>get_predecessor</code></td>
+<td>-</td>
+<td>Asks a node for its predecessor.</td>
+</tr>
+<tr>
+<td><code>find_successor</code></td>
+<td><code>for_id</code>: <code>int</code></td>
+<td>Asks a node to find the correct successor <br> for an ID.</td>
+</tr>
+<tr>
+<td><code>get_closest_preceding_finger</code></td>
+<td><code>for_key_id</code>: <code>int</code></td>
+<td>Asks a node for the closest preceding finger <br> it has for an ID.</td>
+</tr>
+<tr>
+<td><code>get_prev_successor_list</code></td>
+<td>-</td>
+<td>Asks a node for its successor list.</td>
+</tr>
+<tr>
+<td><code>lookup</code></td>
+<td><code>key</code>: <code>string</code></td>
+<td>Asks a node to return the value for a key <br> from its storage.</td>
+</tr>
+<tr>
+<td><code>delete_key</code></td>
+<td><code>key</code>: <code>string</code></td>
+<td>Asks a node to delete a pair by key <br> from its storage.</td>
+</tr>
+</tbody>
+</table>
+<p>The rest of the internal requests, seen below, will almost certainly disrupt network operations, to some degree, if used by outside clients.</p>
+<table>
+<thead>
+<tr>
+<th>Request Type</th>
+<th>Expected Data</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>update_predecessor</code></td>
+<td><code>ip</code>: <code>string</code> <br> <code>port</code>: <code>int</code> <br> <code>node_id</code>: <code>int</code></td>
+<td>Tells a node to update its predecessor <br> to a new node.</td>
+</tr>
+<tr>
+<td><code>clear_predecessor</code></td>
+<td>-</td>
+<td>Tells a node to clear its predecessor.</td>
+</tr>
+<tr>
+<td><code>store_key</code></td>
+<td><code>key</code>: <code>string</code> <br> <code>value</code>: <code>ANY</code> <br> <code>key_id</code>: <code>int</code></td>
+<td>Tells a node to store a new pair in its storage.</td>
+</tr>
+<tr>
+<td><code>batch_store_keys</code></td>
+<td><code>keys</code>: [{ <br> <code>key</code>: <code>string</code> <br> <code>value</code>: <code>ANY</code> <br> <code>key_id</code>: <code>int</code> <br> }]</td>
+<td>Tells a node to store a set of pairs in its storage.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="responses">Responses</h3>
+<p>For most types of requests, there is an expected response. Few requests do not expect a response. This is denoted below by a missing response status.</p>
+<p>Responses always contain a status code in their header. Below are the response codes in use by E-Chord:</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>STATUS_OK</td>
+<td>200</td>
+<td>Request served successfully.</td>
+</tr>
+<tr>
+<td>STATUS_NOT_FOUND</td>
+<td>404</td>
+<td>Unable to find resource.</td>
+</tr>
+</tbody>
+</table>
+<p>Responses might also contain data. In that case, this is contained in the response body. Note that, if the returned status is STATUS_NOT_FOUND, data will not be contained in the response body.</p>
+<h5 id="ordinary-requests_1">Ordinary requests</h5>
+<table>
+<thead>
+<tr>
+<th>Request Type</th>
+<th>Response Status</th>
+<th>Response Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>find_key</code></td>
+<td>STATUS_OK <br> STATUS_NOT_FOUND</td>
+<td><code>value</code>: ANY</td>
+</tr>
+<tr>
+<td><code>find_and_store_key</code></td>
+<td>STATUS_OK <br> STATUS_NOT_FOUND</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>find_and_delete_key</code></td>
+<td>STATUS_OK <br> STATUS_NOT_FOUND</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>poll</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h5 id="debugging-requests_1">Debugging requests</h5>
+<table>
+<thead>
+<tr>
+<th>Request Type</th>
+<th>Response Status</th>
+<th>Response Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>debug_leave_ring</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>debug_pred</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>debug_succ_list</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>debug_finger_table</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>debug_storage</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>debug_fail</code></td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>debug_get_total_keys</code></td>
+<td>STATUS_OK</td>
+<td><code>total_keys</code>: <code>int</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="internal-requests_1">Internal requests</h5>
+<table>
+<thead>
+<tr>
+<th>Request Type</th>
+<th>Response Status</th>
+<th>Response Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get_successor</code></td>
+<td>STATUS_OK</td>
+<td><code>ip</code>: <code>string</code> <br> <code>port</code>: <code>int</code> <br> <code>node_id</code>: <code>int</code></td>
+</tr>
+<tr>
+<td><code>get_predecessor</code></td>
+<td>STATUS_OK <br> STATUS_NOT_FOUND</td>
+<td><code>ip</code>: <code>string</code> <br> <code>port</code>: <code>int</code> <br> <code>node_id</code>: <code>int</code></td>
+</tr>
+<tr>
+<td><code>find_successor</code></td>
+<td>STATUS_OK <br> STATUS_NOT_FOUND</td>
+<td><code>ip</code>: <code>string</code> <br> <code>port</code>: <code>int</code> <br> <code>node_id</code>: <code>int</code></td>
+</tr>
+<tr>
+<td><code>get_closest_preceding_finger</code></td>
+<td>STATUS_OK</td>
+<td><code>fingers</code>: [{ <br> <code>ip</code>: <code>string</code> <br> <code>port</code>: <code>int</code> <br> <code>node_id</code>: <code>int</code> <br> }] <br> <code>contains_successor</code>: <code>bool</code></td>
+</tr>
+<tr>
+<td><code>get_prev_successor_list</code></td>
+<td>STATUS_OK</td>
+<td><code>successor_list</code>: [{ <br> <code>ip</code>: <code>string</code> <br> <code>port</code>: <code>int</code> <br> <code>node_id</code>: <code>int</code> <br> }]</td>
+</tr>
+<tr>
+<td><code>lookup</code></td>
+<td>STATUS_OK <br> STATUS_NOT_FOUND</td>
+<td><code>value</code>: <code>ANY</code></td>
+</tr>
+<tr>
+<td><code>delete_key</code></td>
+<td>STATUS_OK <br> STATUS_NOT_FOUND</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>update_predecessor</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>clear_predecessor</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>store_key</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>batch_store_keys</code></td>
+<td>STATUS_OK</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../parameters/" class="btn btn-neutral float-left" title="Parameters"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../simulation/" class="btn btn-neutral float-right" title="Local simulation">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../parameters/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../simulation/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

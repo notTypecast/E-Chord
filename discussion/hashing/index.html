@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>The Hash Table - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "The Hash Table";
+        var mkdocs_page_input_path = "discussion/hashing.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">The Hash Table</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#what-is-hashing">What is hashing?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hash-functions">Hash functions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hash-function-quality">Hash function quality</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hash-tables">Hash tables</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#collisions">Collisions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-to-deal-with-collisions">How to deal with collisions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-hash-tables">Why hash tables?</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Discussion</li>
+      <li class="breadcrumb-item active">The Hash Table</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="the-hash-table">The Hash Table</h1>
+<p>Before delving into how a distributed hash table can function, it is imperative that one understands how hashing itself works. In this page, we'll describe hashing at its most basic level.</p>
+<h3 id="what-is-hashing">What is hashing?</h3>
+<p>Hashing is one of the most fundamental concepts in Computer Science. From data storage, to cryptography and security, to algorithms and much more, pretty much every sector of Computer Science utilizes hashing in some way or another.</p>
+<p>At its core, hashing amounts to mapping data from an arbitrarily large space to a fixed size space. In other words, it transforms some input, no matter how small or large, to an input of a specific size and format.</p>
+<h3 id="hash-functions">Hash functions</h3>
+<p>Hashing is performed using hash functions. As described above, hashing is a transformation of an input from some space to another, therefore a function is the tool we're looking for to achieve this.</p>
+<p>A hash function accepts data in some format (for instance, strings) and returns what we call a hash digest, or simply hash. A hash can be an integer, a string, or any other data type, but in its most general form, it is data (bytes).</p>
+<p>Let's look at an example of a simple hash function. We'd like to provide some string of arbitrary size as an input, but get an integer in the range [0-8] as an output.</p>
+<p>The idea behind this hash function is simple: we'll assign a number to each character in the string, sum up the numbers and get the result of that sum modulo 8. This will result in an integer between 0 and 7.</p>
+<p>For the sake of argument, let's assign 1 to the character <code>a</code> and 0 to every other character. Let's call this new hash function H<sub>1</sub>. We'll now apply our newly created hash function to some inputs:</p>
+<ul>
+<li>H<sub>1</sub>("Mary") = 1</li>
+<li>H<sub>1</sub>("John") = 0</li>
+<li>H<sub>1</sub>("Elise") = 0</li>
+<li>H<sub>1</sub>("Eleanor") = 1</li>
+</ul>
+<p>Notice how multiple inputs can give the same output? We call this a collision and it is a fundamental problem in hashing.</p>
+<h3 id="hash-function-quality">Hash function quality</h3>
+<p>In fact, when attempting to map inputs from a space of infinite size to outputs from a space of finite size, it's obvious that most often, every output will have infinite inputs mapped to it. This is simply an unavoidable fact.</p>
+<p>This, however, does not mean that all hash functions are equal in quality. Since we'd rather not have any collisions, we rank the quality of a hash function based on how many collisions it produces (with relation to our input of interest).</p>
+<p>Take a look at our hash function from before. You might think that this isn't a good hash function and, for most inputs, you'd probably be right. But consider your input space being strings which contain an arbitrary number of <code>a</code>s. For such input, this hash function is optimal.</p>
+<p>In general, however, a hash function like this wouldn't be very useful. A much better one we can use here would assign each character its integer Unicode value. Let's call that function H<sub>2</sub>. Using this hash function, here are the values for the same names:</p>
+<ul>
+<li>H<sub>2</sub>("Mary") = 1</li>
+<li>H<sub>2</sub>("John") = 7</li>
+<li>H<sub>2</sub>("Elise") = 2</li>
+<li>H<sub>2</sub>("Eleanor") = 6</li>
+</ul>
+<p>Now, every name has its own value. This produces no collisions, which is a significantly better result than that of H<sub>1</sub>.</p>
+<h3 id="hash-tables">Hash tables</h3>
+<p>A hash table is a data structure that stores data in key-value pairs. It does this by using a hash function to transform the key, then using the transformed key to find the location where the value is saved.</p>
+<p>If this sounds complicated, let's take a look at an example. Assume the four names we used above are those of students. Each of them has received a grade in our class, so we want to save their names along with their grades, such that when one of them asks us for their grade, we can quickly tell them what it is.</p>
+<p>We'll use our hash function from before, H<sub>2</sub>. Because H<sub>2</sub> can produce 8 possible values, we'll create an array of size 8. </p>
+<p>After this, we'll apply H<sub>2</sub> to each of the names, which gives us the numbers seen above. We'll use each number as an index to the array, saving both the name and the grade at that position.</p>
+<table>
+<thead>
+<tr>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>Mary: C</td>
+<td>Elise: B</td>
+<td></td>
+<td></td>
+<td></td>
+<td>Eleanor: A</td>
+<td>John: B</td>
+</tr>
+</tbody>
+</table>
+<p>The next time one of these students asks us for their grade, we can simply hash their name, instantly go to the position the resulting hash indicates and get their grade.</p>
+<p>This might not seem like it's much of an improvement, but imagine having thousands of students instead of just four. If your hash table was large enough, you could get the grade for one pretty much instantly. The alternative would be looking through a list of thousands of students, which would certainly take longer.</p>
+<h3 id="collisions">Collisions</h3>
+<p>We mentioned before that we don't like collisions. Why is that?</p>
+<p>The answer to that question depends on your use case. To understand this for hash tables, we'll add another student to our example. Let's assume Jared also took the test and was graded. We want to add him to our hash table, so the first step is hashing his name.</p>
+<ul>
+<li>H<sub>2</sub>("Jared") = 6</li>
+</ul>
+<p>We notice that the value we got for his name is the same as that for Eleanor's. If we go to position 6 of our hash table, we've already saved Eleanor's grade there.</p>
+<p>There are multiple different approaches to solve this issue, but we'll use the one called chaining. This entails simply adding his name after hers, in a list, at that same position. The resulting array looks like this:</p>
+<table>
+<thead>
+<tr>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>Mary: C</td>
+<td>Elise: B</td>
+<td></td>
+<td></td>
+<td></td>
+<td>Eleanor: A <br> Jared: B</td>
+<td>John: B</td>
+</tr>
+</tbody>
+</table>
+<p>Even though this works, it creates a certain problem. When Jared asks us for his grade, we hash his name and end up in position 6. There, we notice that the first grade is not his, but Eleanor's. We need to keep looking through the list to find his name and give him his grade. This makes it so that the process takes longer than it otherwise would.</p>
+<p>This is the reason we want to avoid collisions. Each collision means that two different keys get the same value and, for a hash table, this increases the time it takes to look for a key's value.</p>
+<h3 id="how-to-deal-with-collisions">How to deal with collisions</h3>
+<p>The most common approach to dealing with collisions is simply increasing the output space. If, for instance, our hash function returned the sum modulo 128 and our array was size 128, each student in our example would get their own unique position in the hash table.</p>
+<p>This approach works, but only if our hash function is decent enough to distribute inputs over the output space evenly. If we used H<sub>1</sub> instead, we'd still have multiple collisions, even if we increased the array size significantly.</p>
+<p>In general, collisions are unavoidable, especially the more data we add. However, to keep the hash table's search functionality close to linear, we try to have a balance between hash function quality and hash table size.</p>
+<h3 id="why-hash-tables">Why hash tables?</h3>
+<p>We already saw how a hash table makes searching for a student's grade much faster in our previous example. Let's define the time and space complexity of a hash table more rigorously.</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Average Case</th>
+<th>Worst Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Search</td>
+<td><em>Θ(1)</em></td>
+<td><em>O(n)</em></td>
+</tr>
+<tr>
+<td>Insert</td>
+<td><em>Θ(1)</em></td>
+<td><em>O(n)</em></td>
+</tr>
+<tr>
+<td>Delete</td>
+<td><em>Θ(1)</em></td>
+<td><em>O(n)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Even though the worst case complexity for these operations is the same as linear search in an array, the average case significantly improves this. In practice, this makes hash tables invaluable, with few other data structures being able to perform these functions as efficiently.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../overview/" class="btn btn-neutral float-left" title="Overview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../chord_1/" class="btn btn-neutral float-right" title="The Chord protocol: a distributed hash space">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../overview/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../chord_1/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

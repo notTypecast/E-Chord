@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>E-Chord's architecture - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "E-Chord\u0027s architecture";
+        var mkdocs_page_input_path = "discussion/architecture.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">E-Chord's architecture</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#calling-a-remote-function">Calling a remote function</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#main-architecture">Main architecture</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-listener-thread">The listener thread</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#shared-resources">Shared resources</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#routing-information-as-a-shared-resource">Routing information as a shared resource</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-main-thread">The main thread</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-stabilizer-thread">The stabilizer thread</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#connection-pool">Connection pool</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#security">Security</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#backups">Backups</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Discussion</li>
+      <li class="breadcrumb-item active">E-Chord's architecture</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="e-chords-architecture">E-Chord's architecture</h1>
+<p>This discussion centers on the architecture of an E-Chord node. We'll cover aspects related to the way a node organizes its function and the rules behind its method of operation.</p>
+<h3 id="calling-a-remote-function">Calling a remote function</h3>
+<p>In distributed systems such as Chord, the need arises for executing certain procedures on different systems and obtaining their results. For instance, Chord's lookup procedure relies on a node's ability to get information about other nodes' pointers, such as successors and fingers.</p>
+<p>E-Chord solves this problem using <strong>RPC</strong>s (remote procedure calls). In general distributed computing terms, a remote procedure call occurs when software on a computer executes a procedure in an abstract way, such that the procedure could run on the computer itself, or on a different computer in the network. In E-Chord terms, any request made to a node triggers execution of an RPC.</p>
+<p>RPCs allow a node to execute the protocol's procedures on different nodes, thus retrieving information about parts of the network that the executing node might not have direct access to. Take a look at Chord's algorithm for locating the predecessor for an ID:</p>
+<ol>
+<li>Set the current node to this node.</li>
+<li>Check if the ID is contained between the current node and the current node's successor on the ring. If it is, return the current node.</li>
+<li>If it is not, find the node pointed to by the longest finger in the finger table of the current node, which appears to the left of our ID (counter-clockwise) on the ring. Set that node as the current node. Return to step 2.</li>
+</ol>
+<p>Notice how, throughout this algorithm's execution, it's possible (and likely) that the current node will be set to various different nodes that aren't the original node the algorithm runs on.</p>
+<p>The algorithm, however, requires checking whether the ID is between the current node and its successor. If it isn't, it requires checking the finger table of that node and locating the closest preceding finger to the ID.</p>
+<p>These steps make use of information contained in the routing tables of other nodes. Of course, it would be inefficient to pass all that information to the original node and process it there. Instead, we execute an RPC on the current node. That node could be the node itself, or some other node, but it will always return the results we need.</p>
+<h3 id="main-architecture">Main architecture</h3>
+<p>E-Chord nodes need to perform two types of tasks. Firstly, they need to be able to have RPCs executed on them. In other words, they must respond to requests. Secondly, they need to periodically execute stabilization routines, such that their routing information is kept up to date.</p>
+<p>To achieve this, E-Chord uses a threading approach. Specifically, each E-Chord node executes three basic threads. There is the main thread, the stabilizer thread and the listener thread.</p>
+<h3 id="the-listener-thread">The listener thread</h3>
+<p>Firstly, let's focus on the listener thread. The purpose of this thread is to host the server the node is running, listening for incoming requests. When this thread receives a request, it creates a new thread to handle that request. The reason we don't just handle the request in the listener itself becomes apparent when you consider a situation, in which many requests are received by a node at once.</p>
+<p>Imagine a node receiving many different requests at the same time. If we handled each of them individually in the listener thread, we'd have to handle them sequentially. Remember that handling a request might require making additional requests to other nodes, in a recursive manner. This is a problem, because what if the first request took a whole second to complete? That would mean the rest of the requests would need to wait in line before being handled.</p>
+<p>Instead, by starting a handler thread for each request, no request needs to wait for another to complete, in order to be handled. Requests that can be handled instantly (for example, a <code>poll</code> RPC) will be, whereas requests that might require more time (like a <code>find_key</code> RPC) won't block unrelated traffic.</p>
+<h3 id="shared-resources">Shared resources</h3>
+<p>This subsections describes the function of a mutex. You may skip to the next section if you are already familiar with it.</p>
+<p>Consider an integer with the value 0. Two threads both want to increment the value of that variable. Each thread runs the following code:</p>
+<pre><code class="language-python">x += 1
+</code></pre>
+<p>This might look like a single line of code, but internally, it looks more like this:</p>
+<pre><code class="language-text">READ x
+ADD 1
+WRITE x
+</code></pre>
+<p>As you can see, this isn't just one step anymore. Now imagine having two threads running this code. Internally, the CPU only runs one instruction at a time. As such, one possible execution flow is the following:</p>
+<table>
+<thead>
+<tr>
+<th>Thread 1</th>
+<th>Thread 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>READ x (x = 0)</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>READ x (x =0)</td>
+</tr>
+<tr>
+<td>ADD 1 (x = 1)</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>ADD 1 (x = 1)</td>
+</tr>
+<tr>
+<td>WRITE x (x = 1)</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>WRITE x (x = 1)</td>
+</tr>
+</tbody>
+</table>
+<p>If Thread 1 had written the value (x = 1) before Thread 2 had read it, Thread 2 would have read 1 and correctly incremented it to 2. Yet, the final value for the variable in memory is 1. Since we run two threads, each incrementing the variable by 1, we expected it to be 2.</p>
+<p>We refer to x here as a shared resource. The solution to these types of problems is to use a mutex. A mutex is a special type of variable that can be locked and unlocked. Once a thread calls <code>lock</code> on the mutex, any other thread calling <code>lock</code> on it must wait until the first thread calls <code>unlock</code> in order to proceed.</p>
+<p>In the above example, if Thread 1 locks a mutex before entering, Thread 2 will be stuck waiting for Thread 1 to unlock that mutex. Thread 1 will do so after writing the value 1. Therefore, Thread 2 will correctly read 1 and increment it to 2.</p>
+<h3 id="routing-information-as-a-shared-resource">Routing information as a shared resource</h3>
+<p>With the described system in place, we are able to respond to multiple requests in a non-blocking manner. However, this creates a different issue we must tackle. What happens when two requests both concern the same routing data in the node? For instance, what if two different requests are about the node's predecessor?</p>
+<p>In that case, that routing information becomes a shared resource. Two different requests (i.e two threads) need access to this resource at once. Such a situation needs to be handled with care. Consider one request that performs searching and another that updates routing information. If the latter performs the update while the former is executing, this could throw off the search algorithm and result in a routing failure.</p>
+<p>To combat this, E-Chord assigns an additional property to each of its threads. The main thread is considered a writer, while every other thread is considered a reader. These properties imply that only the main thread is able to alter any sort of data on the node. Other threads may only read that data, but never change it.</p>
+<p>To ensure this results in shared resources being handled correctly, we also employ the use of a Reader-Writer lock. This is a special type of mutex that allows any number of readers access to the shared resource at once, but only allows one writer access. On top of this, both the writer and readers cannot have simultaneous access.</p>
+<p>This works great, because it means that while a request is handled, no data on the node can be changed, since the thread handling it is a reader. Changes can only occur if the writer has access to the resource. In that case, we know none of the readers are executing, so we don't have to worry about routing issues related to the shared resources.</p>
+<h3 id="the-main-thread">The main thread</h3>
+<p>Naturally, we expect that RPCs could change the data of a node. For instance, the <code>update_predecessor</code> RPC requires that a node update its predecessor node. Yet, the previous approach ensures that RPCs, which are always readers, can never change the node's data.</p>
+<p>How do we deal with this issue? As we saw, the main thread is considered the writer, so only it can make changes to data. Thus, any readers that want to make changes must somehow defer them, so they are made by the writer when it gets resource access.</p>
+<p>The method in which this happens utilizes the event queue. If a reader wants to make a change, it inserts a function that makes that change in the queue. Note that the function isn't executed, so the change is not made instantly.</p>
+<p>The main thread then retrieves data from that queue. If that data is a function, it means it is some change that a reader needed to make, so the main thread, being the writer, executes that function.</p>
+<p>Generally, the main thread repeatedly reads data from the queue. Once data is found, it requests access to the resource. When it gains access, it handles the data appropriately (for example, runs it if it is a function). Finally, it frees the resource so readers that are waiting can gain access to it, and repeats the process.</p>
+<h3 id="the-stabilizer-thread">The stabilizer thread</h3>
+<p>The final thread of an E-Chord node is the stabilizer. This thread's function is simple. The thread waits for a certain amount of time, as described by the parameters, and then inserts a special token (<code>0</code>) into the queue.</p>
+<p>The stabilizer thread is also a reader and, thus, cannot run the stabilization procedures itself (since those require editing a node's data). By inserting the token, the main thread will know that stabilization needs to be run and can then run it itself.</p>
+<h3 id="connection-pool">Connection pool</h3>
+<p>By observing the Chord protocol, one might notice that there is a lot of network traffic used for stabilization. This ensures the network will always remain stable, but requires a large amount of bandwidth to achieve this.</p>
+<p>If we examine those requests further, we might notice that for a given network, a node will mostly only contact the same nodes periodically. If we were to open a new TCP socket every time we needed to make an RPC, there would be lots of unnecessary bandwidth overhead just for creating connections.</p>
+<p>E-Chord attempts to reduce that overhead by intelligently keeping connections alive, based on their rate of usage. Specifically, E-Chord uses a connection pool, whose purpose is to keep certain connections alive.</p>
+<p>This connection pool is a layer of abstraction. Whenever E-Chord makes a request, it defers that request to the connection pool. The connection pool determines whether an open connection exists with the target node and, if it does, uses that connection instead of opening a new one.</p>
+<p>Additionally, whenever stabilization routines are executed, we also execute cleanup routines for the connection pool, in order to close unused connections.</p>
+<p>The connection pool itself also handles issues related to synchronization. Since connections are kept open, multiple requests to the same node will use the same connection. Thus, open connections also become shared resources, so the connection pool handles this accordingly.</p>
+<h3 id="security">Security</h3>
+<p>If you're familiar with E-Chord's requests, you might notice that it would be very easy for a bad actor to disrupt the network. Any request received, if valid, is taken at face value by E-Chord nodes. In other words, it is assumed that all nodes in the network operate in an expected fashion.</p>
+<p>This is because E-Chord implements the overlay network itself, and doesn't concern itself with security. A second layer could theoretically be set up on top of it, which validates requests and ensures bad actors cannot disrupt network operation.</p>
+<h3 id="backups">Backups</h3>
+<p>E-Chord also does not implement data backups. This means that any node that leaves abruptly causes all the data stored on it to be lost.</p>
+<p>When it comes to implementing backups, various methods could be used. One such idea would be to use multiple hash functions, thereby creating multiple virtual rings, and store each pair on every ring, instead of just once. Of course, this would increase network bandwidth significantly.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../e-chord/" class="btn btn-neutral float-left" title="E-Chord: An implementation of Chord"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../e-chord/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

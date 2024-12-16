@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>E-Chord: An implementation of Chord - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "E-Chord: An implementation of Chord";
+        var mkdocs_page_input_path = "discussion/e-chord.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">E-Chord: An implementation of Chord</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#seed-server">Seed server</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#routing-data">Routing data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#stabilization">Stabilization</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#local-simulation">Local simulation</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Discussion</li>
+      <li class="breadcrumb-item active">E-Chord: An implementation of Chord</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="e-chord-an-implementation-of-chord">E-Chord: An implementation of Chord</h1>
+<p>E-Chord is an implementation of the Chord protocol. Specifically, we implement the version of Chord that utilizes stabilization routines.</p>
+<p>We refer to this version of Chord as asynchronous, as opposed to the synchronous version. This is because, as described in the <a href="/discussion/chord_2">previous discussion</a>, this version of the protocol allows a node to join and slowly build its pointers, as opposed to immediately blocking the network until all pointers can be updated.</p>
+<h3 id="seed-server">Seed server</h3>
+<p>E-Chord uses a seed server to keep track of nodes in the network. This serves a few purposes. Mainly, a node asks the seed server for the address of another in order to join the network. Without the seed server, this would only be possible by using a fixed address for some node, which would likely be infeasible in most systems.</p>
+<p>Additionally, after a massive node failure, if a node is unable to locate any others through its pointers, it will ask the seed server for the address of a node in order to re-join the network. In practice, due to the types of pointers an E-Chord node holds, this situation is statistically impossible.</p>
+<p>Finally, the seed server can be used by an outside client to learn the address of some node, in order to then perform a query.</p>
+<p>It might seem like using a seed server makes the network less centralized. However, this is not the case. The seed server's only job is providing initial contact information for the network. Beyond that, it does not affect network operation at all, nor is it required for any purpose. In fact, after a network is running, the seed server can be shut down. Of course, this means that new nodes won't be able to join the network, but the network itself will continue regular operation.</p>
+<h3 id="routing-data">Routing data</h3>
+<p>The routing information kept by E-Chord nodes includes the main types of information described by the Chord protocol. Specifically, each node keeps a finger table of size <em>r</em>, where <em>r</em> is the number of bits of IDs in the ring. Each node also keeps its predecessor.</p>
+<p>Additionally, instead of just a single successor pointer, each node keeps a successor list of size <em>r</em>. This is done so, if a massive node failure occurs, it is highly unlikely that some node will be cut off from the network completely.</p>
+<p>All of this data is kept up to date by stabilization routines.</p>
+<h3 id="stabilization">Stabilization</h3>
+<p>An E-Chord stabilize event is made up of three parts: <code>stabilize</code>, <code>fix_successor_list</code> and <code>fix_fingers</code>. All of these take into account various edge cases where pointers might point to dead nodes. Here, we'll only describe their basic function, while ignoring these details.</p>
+<p>The first part, <code>stabilize</code>, works as described by the Chord protocol. A node asks its successor for its predecessor and updates its own successor accordingly.</p>
+<p>The second part, <code>fix_successor_list</code>, uses a custom algorithm created for this purpose. The algorithm keeps the successor list, as well as a current index on the list. A description of the algorithm follows.</p>
+<ol>
+<li>If successor list empty or index&lt;0, ask successor for successor; if successor dead, end; if successor alive, place response at start of list (override or append); if index&lt;0, index=0; end</li>
+<li>Else, ask current index node in successor list for successor</li>
+<li>If alive and last in list and list is full, index=-1; end</li>
+<li>If alive and last in list and list not full, append new successor; index+=1; end</li>
+<li>If alive and not last in list, verify next; if same, index+=1; end; else if different, override next; index+=1; end</li>
+<li>If dead, remove node from successor list; index-=1; end</li>
+</ol>
+<p>This algorithm ensures that the successor list remains up to date. It also serves to build an empty successor list, meaning that new nodes can simply initialize their successor list to empty.</p>
+<p>Finally, <code>fix_fingers</code> picks a random finger from the finger table and updates it. It does this by searching for the successor of the key <em>n + 2<sup>i</sup></em>, where <em>i</em> is the index of the finger, and using that as the new finger.</p>
+<h3 id="local-simulation">Local simulation</h3>
+<p>E-Chord comes with scripts that allow users to simulate an E-Chord network on a single machine. We refer to a network created in such a manner as a simulation.</p>
+<p>Besides the fact that the network is running on a single computer, there isn't much difference in the function of a simulated network. When a node is started on a computer, it creates a process that runs this node. Through the local network, this process communicates with other nodes and thus makes up the DHT.</p>
+<p>When executing the scripts, multiple such processes are started on the same computer. They all use the IP address <code>localhost</code>, while they listen on different ports.</p>
+<p>The visualizer script itself could be modified, so that it works for actual E-Chord networks. To do this, one would simply have to provide it with a list of addresses of existing nodes that it can make requests to. As it now stands, the visualizer makes requests to nodes with <code>localhost</code> IP addresses that use ports in the range defined by the <code>testing</code> parameters.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../chord_2/" class="btn btn-neutral float-left" title="The Chord protocol: locating the right node"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../architecture/" class="btn btn-neutral float-right" title="E-Chord's architecture">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../chord_2/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../architecture/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

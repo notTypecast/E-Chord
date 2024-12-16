@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Adding data to an E-Chord network using the client interface - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Adding data to an E-Chord network using the client interface";
+        var mkdocs_page_input_path = "tutorials/adding-data.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Adding data to an E-Chord network using the client interface</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#executing-the-visualizer">Executing the visualizer</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-data-using-the-client-script">Adding data using the client script</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#observing-the-visualizer">Observing the visualizer</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-more-data">Adding more data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#reading-stored-data">Reading stored data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#deleting-data">Deleting data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Tutorials</li>
+      <li class="breadcrumb-item active">Adding data to an E-Chord network using the client interface</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="adding-data-to-an-e-chord-network-using-the-client-interface">Adding data to an E-Chord network using the client interface</h1>
+<p>In this tutorial, we will be adding data to an existing E-Chord network using a basic interface. For our purposes, we will be doing this with a network running locally on a single computer. We will be using the network created in the <a href="/tutorials/basic-network">Setting up a three-node network on a single computer</a> tutorial.</p>
+<h3 id="executing-the-visualizer">Executing the visualizer</h3>
+<p>To begin with, execute the visualizer script at <code>scripts/visualizer.py</code> if you haven't already. This will show us a view of the current network state, and will update every few seconds to account for changes.</p>
+<p>Currently, the output of the script is the following:</p>
+<pre><code class="language-text">╔═══════════════╦═══════════════╦══════════╗
+║   Successors  ║  Predecessors ║   Keys   ║
+╠═══════════════╬═══════════════╬══════════╣
+║  2503 -&gt; 8230 ║ 15626 &lt;- 8230 ║  2503: 0 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 8230 -&gt; 15626 ║  8230 &lt;- 2503 ║  8230: 0 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 15626 -&gt; 2503 ║ 2503 &lt;- 15626 ║ 15626: 0 ║
+╚═══════════════╩═══════════════╩══════════╝
+Total keys: 0
+Stability: 100.00%
+</code></pre>
+<p>Pay attention to the third column of the table. The values in each row of that column inform us how many keys (i.e pieces of data) each node holds. As we still have not inserted any data into the network, none of the existing nodes store any keys.</p>
+<h3 id="adding-data-using-the-client-script">Adding data using the client script</h3>
+<p>To actually store some data in our network, we must first know how to communicate with it. For this, it is necessary that we know the address of some node in the network. In our example, we inserted all three nodes by hand, so we know the addresses for each of them.</p>
+<p>Since we passed the port numbers as arguments when running nodes, the IP address defaults to the empty IP address, which is equivalent to <code>localhost</code>. The port number used for the first node was 9150.</p>
+<p>Using these, we can now execute the <code>client.py</code> script, located in the main repository. We use the command <code>python3 client.py localhost 9150</code>. This gives us access to a simple interface, which allows for basic communication with the node. By typing in <code>help</code>, we get the following output:</p>
+<pre><code class="language-text">Available commands:
+&gt;lookup [key]
+&gt;insert [key] [value]
+&gt;delete [key]
+&gt;leave
+</code></pre>
+<p>Remember that the Chord protocol describes a DHT (distributed hash table). As such, we store data in key-value pairs, similar to a regular hash table. Let's insert our first pair. We'd like to insert the string <code>"Hello"</code> as the key, with the string <code>"World"</code> as a value. To do this, we execute the <code>insert Hello World</code> command in the client interface.</p>
+<p>As long as the network is running and the node address we gave is valid, we should see the output <code>Successfully stored pair</code>.</p>
+<h3 id="observing-the-visualizer">Observing the visualizer</h3>
+<p>Let's now turn our attention back to the visualizer script. Return to the terminal window where you ran the script, and you should notice some changes:</p>
+<pre><code class="language-text">╔═══════════════╦═══════════════╦══════════╗
+║   Successors  ║  Predecessors ║   Keys   ║
+╠═══════════════╬═══════════════╬══════════╣
+║  2503 -&gt; 8230 ║ 15626 &lt;- 8230 ║  2503: 1 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 8230 -&gt; 15626 ║  8230 &lt;- 2503 ║  8230: 0 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 15626 -&gt; 2503 ║ 2503 &lt;- 15626 ║ 15626: 0 ║
+╚═══════════════╩═══════════════╩══════════╝
+Total keys: 1
+Stability: 100.00%
+</code></pre>
+<p>The visualizer informs us that a key has indeed been added to a node with ID 2503. You might think that this is the node we contacted using its address, but there is no guarantee that this is the case! In fact, contacting a node is equivalent to contacting the entire network: we add data to and read from the entire network, not just the singular node.</p>
+<h3 id="adding-more-data">Adding more data</h3>
+<p>To make this clearer, let's add more data to the network. Similarly to before, execute the <code>insert [key] [value]</code> command in the client interface a few times. Following this, observe the visualizer output again:</p>
+<pre><code class="language-text">╔═══════════════╦═══════════════╦══════════╗
+║   Successors  ║  Predecessors ║   Keys   ║
+╠═══════════════╬═══════════════╬══════════╣
+║  2503 -&gt; 8230 ║ 15626 &lt;- 8230 ║  2503: 1 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 8230 -&gt; 15626 ║  8230 &lt;- 2503 ║  8230: 1 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 15626 -&gt; 2503 ║ 2503 &lt;- 15626 ║ 15626: 7 ║
+╚═══════════════╩═══════════════╩══════════╝
+Total keys: 9
+Stability: 100.00%
+</code></pre>
+<p>Notice how not all of the keys have been stored in the same node and, instead, they've been spread to the three existing nodes. It might seem like too many have been given to the node with ID 15626, but the reason as to why that happens is connected to how the protocol works and our parameters. For more information on this, visit the <a href="/discussion/chord_1">Chord protocol discussion</a> page.</p>
+<h3 id="reading-stored-data">Reading stored data</h3>
+<p>Of course, being able to add data is useless without being able to also retrieve it. As you might have noticed in the available commands before, we can also read any of the data we store in E-Chord. To make this even more interesting, however, let's try reading some of that data from a different node, instead of the one we contacted to store it. After all, that's how we'll know the network isn't just cheating and storing everything in one node!</p>
+<p>Run the client script again, this time with the address of another node. In our example, we used port 9152 for the third node, so let's contact that one, using the command <code>python3 client.py localhost 9152</code>.</p>
+<p>We'll now try to read the first piece of data we stored. The key was <code>Hello</code>, and the expected value stored with it is <code>World</code>. Use the command <code>lookup Hello</code> in the client interface. You should notice the below output:</p>
+<pre><code class="language-text">&gt;lookup Hello
+Key hello has value: world
+</code></pre>
+<p>As you can see, the network is able to locate the value corresponding to that key, even though we inserted it at a different node. In fact, the node we contact is only a "representative" of the network. There is no guarantee that anything we tell it to store will be stored at that node, nor that anything we read is necessarily stored at that node.</p>
+<p>Don't worry about the fact that <code>World</code> is all lowercase. This isn't an issue with the network, but rather the client itself, which lowers the input we provide. In a real execution, this would not be an issue.</p>
+<p>Play around with storing and reading data! Even though the client script only provides limited capabilities, you can still use the visualizer to see that anything you store is placed at a node determined by the network and is readable from every other node.</p>
+<h3 id="deleting-data">Deleting data</h3>
+<p>Of course, hash tables also provide the user with the ability to delete existing data. E-Chord is no different, in that any data previously stored can be deleted. In this case, using the client interface, we can try deleting the first key we inserted using the <code>delete Hello</code> command.</p>
+<pre><code class="language-text">&gt;delete Hello
+Successfully deleted key.
+</code></pre>
+<p>The output informs us that the previously inserted key was indeed deleted. Moving over to the visualizer tab, we can see that one key is indeed missing (we had 9 before):</p>
+<pre><code class="language-text">╔═══════════════╦═══════════════╦══════════╗
+║   Successors  ║  Predecessors ║   Keys   ║
+╠═══════════════╬═══════════════╬══════════╣
+║  2503 -&gt; 8230 ║ 15626 &lt;- 8230 ║  2503: 0 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 8230 -&gt; 15626 ║  8230 &lt;- 2503 ║  8230: 1 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 15626 -&gt; 2503 ║ 2503 &lt;- 15626 ║ 15626: 7 ║
+╚═══════════════╩═══════════════╩══════════╝
+Total keys: 8
+Stability: 100.00%
+</code></pre>
+<p>Finally, looking up the key confirms that it no longer exists in the network.</p>
+<pre><code class="language-text">&gt;lookup Hello
+Key not found.
+</code></pre>
+<h3 id="conclusion">Conclusion</h3>
+<p>You have now successfully used the client interface to insert, read and delete data from an E-Chord network. Later on, we will also dig deeper into the underlying mechanisms for communicating with the network, allowing for more freedom in how we store and retrieve data.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../basic-network/" class="btn btn-neutral float-left" title="Setting up a three node E-Chord network on a single computer"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../mass-simulation/" class="btn btn-neutral float-right" title="Using provided scripts to simulate a large E-Chord network on a single computer">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../basic-network/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../mass-simulation/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

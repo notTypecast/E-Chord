@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Communicating with an active E-Chord network through separate software - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Communicating with an active E-Chord network through separate software";
+        var mkdocs_page_input_path = "tutorials/communication.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Communicating with an active E-Chord network through separate software</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#a-basic-program-using-a-hash-table">A basic program using a hash table</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#communication-with-the-e-chord-network">Communication with the E-Chord network</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#points-of-interest-in-the-hash-table-program">Points of interest in the hash table program</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#equivalent-e-chord-operations">Equivalent E-Chord operations</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#handling-responses">Handling responses</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-same-program-using-e-chord">The same program using E-Chord</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Tutorials</li>
+      <li class="breadcrumb-item active">Communicating with an active E-Chord network through separate software</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="communicating-with-an-active-e-chord-network-through-separate-software">Communicating with an active E-Chord network through separate software</h1>
+<p>In this tutorial, we will create software that communicates with an active E-Chord network and uses it to store and retrieve data.</p>
+<p>We'll assume that you already have an E-Chord network up and running. This can either be a network simulation (running on one machine), or an actual E-Chord network. If you haven't done this yet, consider taking a look at the previous tutorials.</p>
+<h3 id="a-basic-program-using-a-hash-table">A basic program using a hash table</h3>
+<p>Since E-Chord is a distributed hash table, we'll first write a program that uses a regular hash table. After this, we'll replace the hash table with E-Chord, and show that the functionality is the same.</p>
+<p>We'll write the program in Python, where the equivalent of a hash table is a dictionary. The program will implement a simple login system. Users will be able to register using a username and password, and login to the system.</p>
+<p>Obviously, we won't focus on any sort of security for this. We also won't implement any form of defensive programming. This will only serve to demonstrate the function of E-Chord as a distributed hash table.</p>
+<pre><code class="language-python">users = {}
+
+while True:
+    print(&quot;Welcome to Login System!&quot;)
+    c = input(&quot;Would you like to login or register (l/r)? &quot;)
+
+    if c == &quot;l&quot;:
+        username = input(&quot;Username: &quot;)
+        password = input(&quot;Password: &quot;)
+
+        if username not in users or users[username] != password:
+            print(&quot;Incorrect credentials!&quot;)
+            continue
+
+        print(f&quot;Welcome, {username}!&quot;)
+
+    elif c == &quot;r&quot;:
+        username = input(&quot;Username: &quot;)
+        password = input(&quot;Password: &quot;)
+
+        if username in users:
+            print(&quot;Username taken!&quot;)
+            continue
+
+        users[username] = password
+        print(&quot;Successfully registered!&quot;)
+</code></pre>
+<p>The above program uses a hash table to store usernames, with the value corresponding to their password. Whenever a new user registers, the hash table is checked for the existence of the username. If it doesn't exist, it is added with the provided password as a value.</p>
+<p>When a user tries to log in, the hash table is checked for the existence of the username. If it exists and the value is the same as the provided password, login is successful.</p>
+<p>Below is a sample execution of the program:</p>
+<pre><code class="language-text">Welcome to Login System!
+Would you like to login or register (l/r)? r
+Username: Emily
+Password: ilovecats2
+Successfully registered!
+Welcome to Login System!
+Would you like to login or register (l/r)? l
+Username: Emily
+Password: ilovewats2
+Incorrect credentials!
+Welcome to Login System!
+Would you like to login or register (l/r)? l
+Username: Emily
+Password: ilovecats2
+Welcome, Emily!
+</code></pre>
+<h3 id="communication-with-the-e-chord-network">Communication with the E-Chord network</h3>
+<p>When communicating with an E-Chord network, we essentially need to talk to one of the nodes of the network. As such, we need to know the address of some node. If you've started the network yourself, you should know the addresses of the nodes within it, so use one of them.</p>
+<p>If you've used the scripts to create the network, open the <code>config/params.json</code> file. Under <code>testing</code>, you'll find the parameter <code>initial_port</code>. Its value is the port of the first node that was started by the script, incremented by 1 for each new node. As such, one possible address you can use is <code>localhost:[initial_port]</code>. If that one doesn't work, increment the port value by 1 and try again.</p>
+<p>Another way to find an active node in the network is simply by observing the output of the seed server. The seed server regularly polls nodes to confirm they're still there, so looking at its output, you'll find the addresses of recently polled nodes. Remember that an empty IP address string is equivalent to <code>localhost</code>.</p>
+<p>E-Chord nodes communicate using TCP sockets. Additionally, messages between nodes are all in JSON, and follow a specific format. For an in-depth explanation on how to structure your messages when communicating with the network, refer to <a href="/how-to-guides/communication">this guide</a> and the <a href="/reference/communication">equivalent reference guide</a>.</p>
+<p>In order to simplify this process here, we will use an existing function. This function, called <code>ask_node</code>, connects to the node with the address we provide and makes a request of a certain type.</p>
+<pre><code class="language-python">import socket
+import json
+
+def ask_node(peer_addr, req_type, body_dict, custom_timeout=10):
+    &quot;&quot;&quot;
+    Sends a request and returns the response
+    :param peer_addr: (IP, port) of peer
+    :param req_type: type of request for request header
+    :param body_dict: dictionary of body
+    :param custom_timeout: timeout for request
+    :return: string response of peer
+    &quot;&quot;&quot;
+    request_dict = {&quot;header&quot;: {&quot;type&quot;: req_type}, &quot;body&quot;: body_dict}
+    request_msg = json.dumps(request_dict, indent=2)
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+        client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        client.settimeout(custom_timeout)
+        try:
+            client.connect(peer_addr)
+            client.sendall(request_msg.encode())
+            data = client.recv(8192).decode()
+        except (socket.error, socket.timeout):
+            return None
+
+    if not data:
+        return None
+
+    return json.loads(data)
+</code></pre>
+<p>There are various request types that can be made. As mentioned before, a full list can be viewed in the corresponding guides. As we move forward, we'll translate the dictionary (i.e hash map) operations into the appropriate requests for the E-Chord network.</p>
+<h3 id="points-of-interest-in-the-hash-table-program">Points of interest in the hash table program</h3>
+<p>Let's return to the Login System program from before and identify the points where dictionary operations are used. We'll then discuss how these operations can be translated into their equivalents for E-Chord.</p>
+<p>Firstly, at the very top, we create an empty dictionary.</p>
+<p>The next time the dictionary is used is when a user tries to login. </p>
+<pre><code class="language-python">if username not in users or users[username] != password:
+</code></pre>
+<p>In fact, there are two dictionary operations here. The first one is <code>username not in users</code>, which checks for the existence of a key in the dictionary, while the second is <code>users[username]</code>, which retrieves a value from the dictionary by key.</p>
+<p>Finally, we use the dictionary twice when a user registers. Firstly, like before, we check for the existence of a username:</p>
+<pre><code class="language-python">if username not in users:
+</code></pre>
+<p>If a username doesn't exist, we register the user with the credentials given:</p>
+<pre><code class="language-python">users[username] = password
+</code></pre>
+<p>In total, we have four points where we perform dictionary operations. Two of those consist of checking for the existence of a key, one of getting the value for a key and one of inserting a new pair.</p>
+<h3 id="equivalent-e-chord-operations">Equivalent E-Chord operations</h3>
+<p>To perform these operations in the E-Chord network, we'll have to make the appropriate requests to a node in the network. We have three types of operations, each of which will require some type of request.</p>
+<p>To check the existence of a key in the network, we need to make a request of type <code>find_key</code>. This request type also expects the key we're looking for as a parameter.</p>
+<p>To retrieve the value for a given key, we also use the same request type, <code>find_key</code>.</p>
+<p>To insert a new pair into the network, we use the request type <code>find_and_store_key</code>. This request type expects two parameters, the key we want to insert and the value to store for that key.</p>
+<p>If you take a look at the <code>ask_node</code> function's arguments, you'll notice that there are three arguments we must pass to it. Those are <code>peer_addr</code>, <code>req_type</code> and <code>body_dict</code>. The first one is a tuple, containing the IP address (as a string) and the port (as an integer) of the node to connect to. The second is the request type, as described above. The third is a dictionary of the parameters that must be included for that request type.</p>
+<h3 id="handling-responses">Handling responses</h3>
+<p>Since E-Chord is a network, whenever we make a request to one of its nodes, we expect a response. Just like the requests, E-Chord's responses follow a specific format. In general, after we make a request, we receive a response that contains a header and a body. The header contains metadata about the response, while the body contains the response data itself.</p>
+<p>Usually, this means that we check the header for the request status and the body for resulting data. In fact, every response will always contain a <code>status</code> field in the header. Its value is an integer code, borrowed from  <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">HTTP response status codes</a>, that indicates the response status.</p>
+<h3 id="the-same-program-using-e-chord">The same program using E-Chord</h3>
+<p>Let's now attempt to rewrite the Login System program, using E-Chord as our dictionary. We'll start by placing the code for the <code>ask_node</code> function in a separate file, <code>ask_node.py</code>, and then import it into our program, using the line <code>from ask_node import ask_node</code>.</p>
+<p>Since the E-Chord network is already running, we don't need to do anything when it comes to creating our dictionary. Next, let's look at the first two instances where the dictionary is used, when a user logs in.</p>
+<pre><code class="language-python">if username not in users or users[username] != password:
+</code></pre>
+<p>Here, we need to check for the existence of the username. If the username exists, we need to check whether the provided password matches the one we have in storage.</p>
+<p>Remember how the request type for checking whether a key exists and for retrieving a key's value is the same? This is convenient, because we would prefer to only make one request here, not two. As such, we'll ask our node to find the provided username. The response will indicate if it exists and, if it does, will contain the password.</p>
+<pre><code class="language-python">response = ask_node(NODE_ADDR, &quot;find_key&quot;, {&quot;key&quot;: username})
+</code></pre>
+<p>We then need to determine whether the key exists. To do this, we check the response status. It will either be 200, which means the key exists, or 404, which means it doesn't. If it does, we move to the response body, where the <code>value</code> field will contain the value for the key, which is the password.</p>
+<pre><code class="language-python">if response[&quot;header&quot;][&quot;status&quot;] == 404 or response[&quot;body&quot;][&quot;value&quot;] != password:
+    print(&quot;Incorrect credentials!&quot;)
+    continue
+</code></pre>
+<p>As for the register part, we need to check if a username already exists, so as not to override it. This is done exactly as above. In case the username does not exist, we need to store a pair for the new user. To do this, we use the <code>find_and_store_key</code> request type.</p>
+<pre><code class="language-python">response = ask_node(NODE_ADDR, &quot;find_and_store_key&quot;, {&quot;key&quot;: username, &quot;value&quot;: password})
+</code></pre>
+<p>In theory, this request should never fail. In practice, a routing error could cause the response status to be 404. If that were to happen, we could repeat the request, possibly to a different node. For the purposes of this tutorial, however, that will not be necessary.</p>
+<p>This is it! The full version of the program, using E-Chord as its dictionary, can be seen below.</p>
+<pre><code class="language-python">from ask_node import ask_node
+
+NODE_ADDR = (&quot;localhost&quot;, 9150)
+
+while True:
+    print(&quot;Welcome to Login System!&quot;)
+    c = input(&quot;Would you like to login or register (l/r)? &quot;)
+
+    if c == &quot;l&quot;:
+        username = input(&quot;Username: &quot;)
+        password = input(&quot;Password: &quot;)
+
+        response = ask_node(NODE_ADDR, &quot;find_key&quot;, {&quot;key&quot;: username})
+
+        if response[&quot;header&quot;][&quot;status&quot;] == 404 or response[&quot;body&quot;][&quot;value&quot;] != password:
+            print(&quot;Incorrect credentials!&quot;)
+            continue
+
+        print(f&quot;Welcome, {username}!&quot;)
+
+    elif c == &quot;r&quot;:
+        username = input(&quot;Username: &quot;)
+        password = input(&quot;Password: &quot;)
+
+        response = ask_node(NODE_ADDR, &quot;find_key&quot;, {&quot;key&quot;: username})
+
+        if response[&quot;header&quot;][&quot;status&quot;] == 200:
+            print(&quot;Username taken!&quot;)
+            continue
+
+        response = ask_node(NODE_ADDR, &quot;find_and_store_key&quot;, {&quot;key&quot;: username, &quot;value&quot;: password})
+
+        print(&quot;Successfully registered!&quot;)
+</code></pre>
+<p>Let's now try the same sample execution as with the regular version of the program.</p>
+<pre><code class="language-text">Welcome to Login System!
+Would you like to login or register (l/r)? r
+Username: Emily
+Password: ilovecats2
+Successfully registered!
+Welcome to Login System!
+Would you like to login or register (l/r)? l
+Username: Emily
+Password: ilovewats2
+Incorrect credentials!
+Welcome to Login System!
+Would you like to login or register (l/r)? l
+Username: Emily
+Password: ilovecats2
+Welcome, Emily!
+</code></pre>
+<p>As expected, our output is exactly the same as before! This means E-Chord has correctly stored and retrieved the pair for us, and we have communicated with it through our own software.</p>
+<p>At this point, play around with the Login System programs. Try different inputs for both, and see if the version using E-Chord works as expected.</p>
+<p>Do not forget that, since the network is running separately to your program, if you quit and start your program again, the users you've already created will still be there (since they're stored on the network). This is contrary to the original version, where restarting the program erases the dictionary data you've previously inserted.</p>
+<p>If the E-Chord network you're using is simulated on one computer, you may also run the visualizer script at the <code>scripts</code> directory to view the nodes in the network and see which of them store the keys you insert.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>In this tutorial, you set up a simple program of your own, which communicates with an E-Chord network directly and uses it as its dictionary to store data. You made requests towards a node in the network and read its responses to achieve this.</p>
+<p>For a full list of requests and their expected responses, visit the <a href="/reference/communication">communication reference</a>.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../mass-simulation/" class="btn btn-neutral float-left" title="Using provided scripts to simulate a large E-Chord network on a single computer"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../reference/parameters/" class="btn btn-neutral float-right" title="Parameters">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../mass-simulation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../reference/parameters/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

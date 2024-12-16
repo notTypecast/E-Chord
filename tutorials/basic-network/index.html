@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Setting up a three node E-Chord network on a single computer - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Setting up a three node E-Chord network on a single computer";
+        var mkdocs_page_input_path = "tutorials/basic-network.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Setting up a three node E-Chord network on a single computer</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#starting-the-seed-server">Starting the seed server</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-a-node">Adding a node</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#interactions-with-the-seed-server">Interactions with the seed server</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-a-second-node">Adding a second node</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Tutorials</li>
+      <li class="breadcrumb-item active">Setting up a three node E-Chord network on a single computer</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="setting-up-a-three-node-e-chord-network-on-a-single-computer">Setting up a three node E-Chord network on a single computer</h1>
+<p>In this tutorial, we will set up an E-Chord network consisting of three nodes. The entire network, including the seed server, will run on a single computer, only using the local network for communication.</p>
+<p>To do this, we'll need both the repository for the seed server and for the node. Start by cloning both of these repositories at a location of your choosing. For more information on how to do this, refer to the <a href="/how-to-guides/setting-up">setting up guide</a>.</p>
+<h3 id="starting-the-seed-server">Starting the seed server</h3>
+<p>As always, the first step is to start the seed server. Open a terminal at the seed server's location and use the <code>python3 server.py</code> command. The output should look something like this:</p>
+<pre><code class="language-text">MainThread-INFO: Loaded params
+MainThread-INFO: Starting node on 192.168.1.12:8000
+</code></pre>
+<p>If instead, you get a <em>Permission denied</em> error, it most likely means the port is already in use. In that case, edit the port number in <code>params.json</code> and try again.</p>
+<p>You have now started the seed server! The server will wait for new nodes to contact it, so the next step is adding some nodes to the network.</p>
+<h3 id="adding-a-node">Adding a node</h3>
+<p>Go to the location where you cloned the main repository. A tree view of the repository should look like this:</p>
+<pre><code class="language-text">.
+├── client.py
+├── config
+│   └── params.json
+├── LICENSE
+├── README.md
+├── scripts
+│   ├── mass_data.py
+│   ├── mass_node_join.py
+│   ├── mass_node_leave.py
+│   └── visualizer.py
+├── src
+│   ├── ConnectionPool.py
+│   ├── Finger.py
+│   ├── Node.py
+│   ├── rpc_handlers.py
+│   ├── Storage.py
+│   └── utils.py
+└── start_node.py
+
+3 directories, 15 files
+</code></pre>
+<p>If this looks like a lot, don't worry! We won't be using most of these for our purposes. In fact, there is only one step we need to perform before adding our first node to the network: setting up the seed server parameters. This is essentially equivalent to telling our nodes how to contact the seed server we just opened.</p>
+<p>To do this, open the <code>config/params.json</code> file. Find the <code>"seed_server"</code> section and replace the default IP (192.168.1.15) with the seed server's IP, as well as the default port (8000) with the seed server's port. Make sure to save these changes.</p>
+<p>Once you've done this, return to the terminal at the repository's location and run the <code>start_node.py</code> file using the <code>python3 start_node.py 9150</code> command. If you get the permission denied error again, you'll need to run using a different port number. Simply change the last argument of the command. For instance, if you want to run using port number 9200, run the command <code>python3 start_node.py 9200</code>.</p>
+<p>If all goes well, you should see output similar to the following:</p>
+<pre><code class="language-text">MainThread:15626-INFO: No other nodes in the network
+MainThread:15626-INFO: Initialized predecessor and sucessor list to self
+MainThread:15626-INFO: Starting node on :9150
+</code></pre>
+<p>This means our node has joined the network successfully! Since this is the first node to join, we get the <em>No other nodes in the network</em> message.</p>
+<p>You might also notice that as time goes on, more and more messages fill the output. This is normal! The Chord protocol contains various periodic routines, so these messages simply inform us every time one of those completes.</p>
+<h3 id="interactions-with-the-seed-server">Interactions with the seed server</h3>
+<p>If you return to the terminal window where the seed server is running, you'll notice there is new output there as well. When we initially started our node, we got output such as this:</p>
+<pre><code class="language-text">Thread-3 (handle_connection)-INFO: Got request for seed, sending None
+MainThread-INFO: Added ('192.168.1.12', 9150, 11932)
+</code></pre>
+<p>This tells us the node we started contacted the seed server and asked for a seed, but got nothing (because there are no nodes in the network yet)! The node was then added to the seed server's list. Afterwards, you'll notice the seed server periodically outputting messages like these:</p>
+<pre><code class="language-text">Poll-INFO: Polling node: ('192.168.1.12', 9150)
+Poll-INFO: Node is alive
+</code></pre>
+<p>This means our seed server is periodically contacting our node, asking it if it is still there. The node responds and so the server determines it is alive, therefore keeping it in its list.</p>
+<h3 id="adding-a-second-node">Adding a second node</h3>
+<p>Let's now add a second node. Just like before, open a new terminal window at the location of the node repository and execute the command <code>python3 start_node.py 9951</code>. You don't necessarily have to use the same port number, but make sure it is different to the ones used by the seed server and your first node.</p>
+<p>Since you're executing this in the same repository, you've already made the necessary changes to the parameters, so you don't need to worry about making those changes again.</p>
+<p>You should now notice that the initial messages we get as output are different to those of the first node.</p>
+<pre><code class="language-text">MainThread:2503-INFO: Got seed from seed server
+MainThread:2503-INFO: Asking seed for successor
+MainThread:2503-INFO: Got successor
+MainThread:2503-INFO: Asking successor for this node's successor list
+MainThread:2503-INFO: Initialized successor list
+MainThread:2503-INFO: Starting node on :9151
+</code></pre>
+<p>These tell us that the second node recognizes that there's another node in the network and contacts it. We can see the start of this exchange in the seed server's output as well.</p>
+<pre><code class="language-text">Thread-172 (handle_connection)-INFO: Got request for seed, sending ('192.168.1.12', 9150, 11932)
+MainThread-INFO: Added ('', 9151, 2503)
+</code></pre>
+<p>The second node asked the seed server for a seed. This time, since the first node was already in the network, the seed server provided the second node with the information necessary to connect to it.</p>
+<p>Between the stabilization messages of the first node, you'll find the below output as well:</p>
+<pre><code class="language-text">MainThread:11932-INFO: Got new successor
+</code></pre>
+<p>This tells us that the first node is now also aware of the second node's existence.</p>
+<p>The network should now contain both of the nodes we added. Finally, let's add a third node and observe the output we get. Just like before, open a new terminal and start another node, with a different port to those already used.</p>
+<p>The result should be the same as when we added the second node. Both existing nodes connect to the new node. The seed server will initially send information about one of the two existing nodes randomly. If you repeat this experiment multiple times, you'll find that sometimes, the third node initially gets information about the first node, whereas other times it gets information about the second one.</p>
+<p>Finally, we can use one of the provided scripts to get a better view of the current network. Open a new terminal at the repository's location. Use <code>cd scripts</code> to enter the <code>scripts</code> directory and execute the <code>python3 visualizer.py</code> command.</p>
+<p>You'll notice output similar to this:</p>
+<pre><code class="language-text">╔═══════════════╦═══════════════╦══════════╗
+║   Successors  ║  Predecessors ║   Keys   ║
+╠═══════════════╬═══════════════╬══════════╣
+║  2503 -&gt; 8230 ║ 15626 &lt;- 8230 ║  2503: 0 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 8230 -&gt; 15626 ║  8230 &lt;- 2503 ║  8230: 0 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 15626 -&gt; 2503 ║ 2503 &lt;- 15626 ║ 15626: 0 ║
+╚═══════════════╩═══════════════╩══════════╝
+Total keys: 0
+Stability: 100.00%
+</code></pre>
+<p>If the nodes aren't visible, make sure you're using ports in the visualizer's range. By default, this range is 9150 to 9250.</p>
+<p>You are now able to confirm that everything is indeed stable. Each node should have the next one as its successor, increasing in ID, until the last one, which connects to the first one again. The predecessors, of course, go in the opposite direction.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>If this is the case, then you have successfully created an E-Chord network on your computer! Note that even though this network runs in the exact same way as a regular network, it all happens locally on a single machine. For more information on the differences between this and an actual network, refer to <a href="/discussion/e-chord/#local-simulation">the E-Chord discussion</a>.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../how-to-guides/communication/" class="btn btn-neutral float-left" title="How to communicate with an E-Chord network"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../adding-data/" class="btn btn-neutral float-right" title="Adding data to an E-Chord network using the client interface">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../../how-to-guides/communication/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../adding-data/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

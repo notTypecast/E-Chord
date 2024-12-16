@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Using provided scripts to simulate a large E-Chord network on a single computer - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Using provided scripts to simulate a large E-Chord network on a single computer";
+        var mkdocs_page_input_path = "tutorials/mass-simulation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#starting-the-seed-server">Starting the seed server</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#configuring-node-parameters">Configuring node parameters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#executing-the-visualizer">Executing the visualizer</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adding-nodes-to-the-network">Adding nodes to the network</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#inserting-data">Inserting data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#looking-up-inserted-data">Looking up inserted data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#removing-half-the-networks-nodes">Removing half the network's nodes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#looking-up-data-after-simulated-failure">Looking up data after simulated failure</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Tutorials</li>
+      <li class="breadcrumb-item active">Using provided scripts to simulate a large E-Chord network on a single computer</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="using-provided-scripts-to-simulate-a-large-e-chord-network-on-a-single-computer">Using provided scripts to simulate a large E-Chord network on a single computer</h1>
+<p>The purpose of this tutorial is to use scripts provided with E-Chord to set up a large E-Chord network. As in previous tutorials, the network will run on a single computer. As such, we refer to it as a simulation, rather than a real network.</p>
+<p>To follow along, you'll need to get both the seed server and the main E-Chord repositories. For more information on how to do this, refer to the <a href="/how-to-guides/setting-up">setting up guide</a>.</p>
+<h3 id="starting-the-seed-server">Starting the seed server</h3>
+<p>As usual, the first step to setting up an E-Chord network is executing the seed server. If you've done this before, feel free to repeat that process and skip this section.</p>
+<p>Open a terminal at the location of the seed server and execute the command <code>python3 server.py</code>. You should see output similar to the following:</p>
+<pre><code class="language-text">MainThread-INFO: Loaded params
+MainThread-INFO: Starting node on 192.168.1.12:8000
+</code></pre>
+<p>If this isn't the case, the most common issue will be the unavailability of the port used. Open the <code>params.json</code> file, located in the same directory, and change the port under <code>host</code> to a different number. Try running the server again, until you you get output like the above.</p>
+<p>Take note of the IP address and port number of the seed server, as seen in the output. You'll need this information for the next part.</p>
+<h3 id="configuring-node-parameters">Configuring node parameters</h3>
+<p>Before adding any nodes to the network, we must make sure we've set up the execution parameters as required. Those can be found in the main E-Chord repository, at <code>config/params.json</code>.</p>
+<p>Open that file using a text editor of your choice. The contents should look something like this:</p>
+<pre><code class="language-json">{
+  &quot;seed_server&quot;: {
+    &quot;ip&quot;: &quot;192.168.1.12&quot;,
+    &quot;port&quot;: 8000,
+    &quot;attempt_limit&quot;: 4
+  },
+  &quot;host&quot;: {
+    &quot;server_port&quot;: 9150
+  },
+  &quot;ring&quot;: {
+    &quot;bits&quot;: 14,
+    &quot;fallback_fingers&quot;: 2,
+    &quot;stabilize_delay&quot;: 3
+  },
+  &quot;net&quot;: {
+    &quot;timeout&quot;: 10,
+    &quot;connection_lifespan&quot;: 60,
+    &quot;data_size&quot;: 8192
+  },
+  &quot;logging&quot;: {
+    &quot;level&quot;: &quot;INFO&quot;
+  },
+  &quot;testing&quot;: {
+    &quot;initial_port&quot;: 9150,
+    &quot;total_nodes&quot;: 100,
+    &quot;stabilize_wait_period&quot;: 60,
+    &quot;percentage_to_remove&quot;: 50
+  }
+}
+</code></pre>
+<p>If these look overwhelming, don't worry. We'll only use a few here, so you can ignore most of these. For a complete list of parameters and their function, refer to the <a href="/reference/parameters/#node-parameters">corresponding reference guide</a>.</p>
+<p>The first parameters we'll need to change can be seen first, under <code>seed_server</code>. We'll need to change the values for <code>ip</code> and <code>port</code> to the values we got when we started the seed server. The commonly used format for these is <code>[ip address]:[port]</code>, so replace the default IP address and port with the ones your seed server is using.</p>
+<p>For instance, our seed server output was <code>192.168.1.12:8000</code>. Therefore, we set the IP address to 192.168.1.12, and the port to 8000, as seen above.</p>
+<p>The next set of parameters we'll concern ourselves with are those under <code>testing</code>. These are parameters that describe the function of the simulation scripts. Specifically, we'll change the value of the <code>total_nodes</code> parameter to 40. This parameter describes the number of nodes that will actually be created in our simulation. In other words, the number of simulated computers in our network.</p>
+<p>Feel free to use a different value if you want to! Just make sure it isn't too large, since it will affect your waiting time later on.</p>
+<p>Once you've saved your changes, you're ready to move on to the next part.</p>
+<h3 id="executing-the-visualizer">Executing the visualizer</h3>
+<p>Next up, make sure to execute the visualizer script. Open a terminal window at the <code>scripts</code> directory, located in the main E-Chord directory, and execute <code>python3 visualizer.py</code>.</p>
+<p>What you should see is an empty table. This is expected, since we haven't yet added any nodes to the network.</p>
+<h3 id="adding-nodes-to-the-network">Adding nodes to the network</h3>
+<p>Now that our parameters are configured, we're ready to execute our first script. If you've followed the first tutorial, you might have noticed that adding each node to the network individually can be time-consuming. To avoid this, we can instead use a script to add a number of nodes, as determined by the parameter we set.</p>
+<p>Open a new terminal window at the <code>scripts</code> directory and execute the command <code>python3 mass_node_join.py</code>. You'll start getting a large amount of output. You can ignore that and switch back to the visualizer window.</p>
+<p>Once you do so, you'll see that every time the script updates, more nodes are added to the network. Pay attention to the IDs for each node's successor. You might see that for a lot of them, the successor isn't the same as the ID of the node below it. This is because the network hasn't yet stabilized, as indicated by the stability percentage at the bottom.</p>
+<p>Wait and observe the visualizer. With time, you'll notice the stability percentage going up. If you look at individual nodes in the table, you'll find that more and more of them start pointing to the correct successor, the node under them in the table.</p>
+<p>Eventually, the network stability percentage should reach 100%. Once it does, you're ready to move on to the next step (in fact, you can even move on if your stability percentage is high, but not yet 100%).</p>
+<h3 id="inserting-data">Inserting data</h3>
+<p>For this part, we'll need some additional data, in JSON format. Specifically, we'll want a JSON file that consists of a JSON Object, containing multiple keys. If you already have a file with that format, you may use that. If not, you can use <a href="/sample_5MB.json">this randomly generated sample file</a>.</p>
+<p>Open a new terminal window at the scripts directory and execute the command <code>python3 mass_data.py [filedir] i</code>. Replace <code>[filedir]</code> with the directory of the data file you're using (relative or absolute).</p>
+<p>If the script executes correctly, you will see the script slowly inserting data into the network. You may switch over to the visualizer as well, where you'll notice the total number of keys increasing, as well as various nodes starting to hold those keys.</p>
+<p>The <code>mass_data</code> script will also notify you of the failure percentage for the insertions. This is generally expected to be 0, but do not panic if it isn't! E-Chord is a distributed system and, as such, routing failures will always happen. In this case, the script will ignore keys that fail to be inserted, but in a real scenario, we would attempt to insert them again until we succeed.</p>
+<p>Once the insertion script finishes, observe the visualizer window. Below is a sample of what part of the table should look like.</p>
+<pre><code class="language-text">╔════════════════╦════════════════╦════════════╗
+║   Successors   ║  Predecessors  ║    Keys    ║
+╠════════════════╬════════════════╬════════════╣
+║   493 -&gt; 665   ║ 16263 &lt;- 15162 ║  493: 380  ║
+╠════════════════╬════════════════╬════════════╣
+║   665 -&gt; 1558  ║ 15162 &lt;- 15000 ║  665: 106  ║
+╠════════════════╬════════════════╬════════════╣
+║  1558 -&gt; 2178  ║ 15000 &lt;- 14250 ║  1558: 604 ║
+╠════════════════╬════════════════╬════════════╣
+║  2178 -&gt; 2358  ║ 14250 &lt;- 13662 ║  2178: 350 ║
+╠════════════════╬════════════════╬════════════╣
+║  2358 -&gt; 2449  ║ 13662 &lt;- 13637 ║  2358: 115 ║
+╠════════════════╬════════════════╬════════════╣
+</code></pre>
+<p>You'll find that the keys have been spread to multiple nodes, instead of all of them being saved in one. Pay attention to how the keys are distributed. On average, it will probably look like each node stores a similar number of keys, with the occasional extremes. A more careful look might, however, reveal that the number of keys stored in each node is somehow proportional to the distance between the node's ID and the previous node ID. The reason for this relates to the Chord protocol itself. For further analysis, visit the <a href="/discussion/chord_1">Chord protocol discussion</a>.</p>
+<p>At the bottom of the script, you'll get a sum of the total keys saved in the network:</p>
+<pre><code class="language-text">Total keys: 9808
+Stability: 100.00%
+</code></pre>
+<p>Because of routing failures, we were only able to save 9808 out of the 10000 keys we had. This might be different in your case.</p>
+<h3 id="looking-up-inserted-data">Looking up inserted data</h3>
+<p>Now that we've inserted our data, it is time to figure out whether we can actually retrieve what we stored. To do this, we use the same script as before, only with <code>l</code> instead of <code>i</code> as a final argument. Specifically, the command we'll execute (at the <code>scripts</code> directory) is <code>python3 mass_data.py [filedir] l</code>.</p>
+<p>Once the script is correctly executed, the output should look similar to the one of the insertion variant. This time, the failure percentage we see indicates lookup failures.</p>
+<p>You'll observe that that percentage is likely higher than the insertion percentage from before. In fact, the lowest possible failure percentage you can expect here is the insertion failure percentage. This is because, since we're using the entire file again, we're looking up every key, including those that weren't inserted.</p>
+<p>Still, if everything goes well, you should see a relatively low failure percentage. If you're instead getting very high failure percentages, it helps to restart your computer and try setting up the network again.</p>
+<h3 id="removing-half-the-networks-nodes">Removing half the network's nodes</h3>
+<p>A quality that is generally desired of any distributed system is the ability for fault tolerance. Distributed systems, by their nature, are always prone to various types of faults. One of those faults is the sudden loss of network nodes (because a computer went offline, or lost power, etc).</p>
+<p>To test E-Chord's ability for tolerance to such faults, we're going to intentionally drop half the network's nodes. We'll then let the system stabilize and try to look up our data again.</p>
+<p>To start this process, go to the <code>scripts</code> directory and execute the <code>python3 mass_node_leave.py</code> command. This will remove half the nodes from the network. If you return to the visualizer, you'll notice that some keys have been lost, and stability has dropped.</p>
+<p>At this point, wait and observe the visualizer again. It will likely take a while, but eventually, stability should return to 100%. Nevertheless, once stability is high enough, we can move on to the next step.</p>
+<h3 id="looking-up-data-after-simulated-failure">Looking up data after simulated failure</h3>
+<p>Now that we've intentionally caused a mass node failure, and after the network has been given time to stabilize, we can look up our data again. At the <code>scripts</code> directory, execute the <code>mass_data</code> script again, in the same way we did before when we initially looked up the data.</p>
+<p>You should notice that, even though the failure percentage will generally be higher, the network has more or less been able to come back from losing even as high a number of nodes as half its nodes at once. In fact, most of the failures will occur due to missing data, either because insertion itself failed, or because data might have been lost due to the node failures.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>In this tutorial, you set up a simulation of a large E-Chord network on a single computer. Using the scripts, you managed to insert data into the network, and subsequently retrieve that data.</p>
+<p>Afterwards, you caused a massive node failure and observed how the network re-stabilizes over time. Finally, you looked up your data again.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../adding-data/" class="btn btn-neutral float-left" title="Adding data to an E-Chord network using the client interface"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../communication/" class="btn btn-neutral float-right" title="Communicating with an active E-Chord network through separate software">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../adding-data/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../communication/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

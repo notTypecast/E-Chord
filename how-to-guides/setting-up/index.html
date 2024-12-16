@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>How to set up an E-Chord network locally - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "How to set up an E-Chord network locally";
+        var mkdocs_page_input_path = "how-to-guides/setting-up.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">How to set up an E-Chord network locally</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#seed-server">Seed Server</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#nodes">Nodes</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_1/">The Chord protocol: a distributed hash space</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../discussion/architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">How-To Guides</li>
+      <li class="breadcrumb-item active">How to set up an E-Chord network locally</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="how-to-set-up-an-e-chord-network-locally">How to set up an E-Chord network locally</h1>
+<p>This guide describes the process by which an E-Chord network can be set up in a local network.</p>
+<h3 id="seed-server">Seed Server</h3>
+<p>The first thing you'll need to do before starting any E-Chord nodes is to run a seed server. Unless you have a custom seed server, you can use <a href="https://github.com/notTypecast/E-Chord-Seed">the original implementation</a> provided with the main E-Chord implementation.</p>
+<p>On the machine you want acting as a seed server, start by cloning the repository. At a location of your choice, open a terminal and use the command <code>git clone https://github.com/notTypecast/E-Chord-Seed</code>. You should see output similar to the below:</p>
+<pre><code class="language-text">Cloning into 'E-Chord-Seed'...
+remote: Enumerating objects: 48, done.
+remote: Counting objects: 100% (48/48), done.
+remote: Compressing objects: 100% (37/37), done.
+Receiving objects: 100% (48/48), 10.67 KiB | 214.00 KiB/s, done.
+remote: Total 48 (delta 24), reused 30 (delta 10), pack-reused 0 (from 0)
+Resolving deltas: 100% (24/24), done.
+</code></pre>
+<p>If not, make sure <em>git</em> is installed on the system.</p>
+<p>Another way to get the repository is through GitHub's web interface itself. Above the repository's directory structure on the main page, you will find a button with the text <em>&lt;&gt; Code</em>. Click it, and choose the <em>Download ZIP</em> option. You should now have a ZIP file with the repository in it. Simply extract it at your location of choice.</p>
+<p>Once the repository has been cloned, open a terminal at its location. If you cloned the repository through the command line interface, using the command <code>cd E-Chord-Seed</code> directly after will suffice.</p>
+<p>Optionally, you can change the seed server parameters before starting the server. Open the <code>params.json</code> file. Here, you can change the server's port, which is 8000 by default. For a full list of parameters, refer to the <a href="/reference/parameters/#seed-server-parameters">parameter reference guide</a>.</p>
+<p>Once finished, enter the command <code>python3 server.py</code>. If nothing goes wrong, you should see the below output:</p>
+<pre><code class="language-text">MainThread-INFO: Loaded params
+MainThread-INFO: Starting node on [your local IP]:[your PORT]
+</code></pre>
+<p>You have now successfully set up the Seed Server!</p>
+<h3 id="nodes">Nodes</h3>
+<p>The next part is setting up the actual E-Chord network. On a computer you'd like to add to the network as a node, get the <a href="https://github.com/notTypecast/E-Chord">E-Chord</a> repository, similarly to how you previously downloaded the seed repository.</p>
+<p>There is just one step that must be completed before entering the network. Open the <code>config/params.json</code> file. There, you'll find various parameters about the network that can be customized. For a full list of them, refer to the <a href="/reference/parameters/#node-parameters">parameter reference guide</a>.</p>
+<p>Under <code>"seed_server"</code>, you'll find the following parameters:</p>
+<pre><code class="language-text">&quot;seed_server&quot;: {
+    &quot;ip&quot;: &quot;192.168.1.15&quot;,
+    &quot;port&quot;: 8000,
+    &quot;attempt_limit&quot;: 4
+  }
+</code></pre>
+<p>Make sure to change the seed server IP to the IP of the computer running the seed server on the local network. This was available at the <code>[your local IP]</code> part of the output after you ran the seed server. Similarly, change the port number to the number you used to run the seed server.</p>
+<p>Additionally, change the port number under <code>host</code> to a unique port number.</p>
+<p>Optionally, change any other parameters as needed. However, make sure that any changes are applied to every node in the network, since most of these parameters must be the same across all nodes. Again, refer to the guide for more information on individual parameters.</p>
+<p>Once the parameters are set up as required, you can launch the node on this system using the <code>python3 start_node.py</code> command. Do not provide the port as an argument! If you do this, the node will run on <code>localhost</code> and won't be visible to other computers in the network.</p>
+<p>If everything has been done correctly, you should see output confirming that the node has joined the network. If this is the first computer you've added to the network, the output should look somewhat like this:</p>
+<pre><code class="language-text">MainThread:11932-INFO: No other nodes in the network
+MainThread:11932-INFO: Initialized predecessor and sucessor list to self
+MainThread:11932-INFO: Starting node on [your local IP]:[your PORT]
+</code></pre>
+<p>You'll need to repeat this process for each new computer you add to the network. As you add more computers, the output of each should start to indicate the presence of others in the network.</p>
+<p>Similarly, the output of the seed server should indicate awareness of each of the nodes joining the network.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../.." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../communication/" class="btn btn-neutral float-right" title="How to communicate with an E-Chord network">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../.." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../communication/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

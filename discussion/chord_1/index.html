@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>The Chord protocol: a distributed hash space - E-Chord Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "The Chord protocol: a distributed hash space";
+        var mkdocs_page_input_path = "discussion/chord_1.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> E-Chord Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-To Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/setting-up/">How to set up an E-Chord network locally</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/communication/">How to communicate with an E-Chord network</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-network/">Setting up a three node E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/adding-data/">Adding data to an E-Chord network using the client interface</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mass-simulation/">Using provided scripts to simulate a large E-Chord network on a single computer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/communication/">Communicating with an active E-Chord network through separate software</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/parameters/">Parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/communication/">Communication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/simulation/">Local simulation</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Discussion</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hashing/">The Hash Table</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">The Chord protocol: a distributed hash space</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#distributing-a-hash-table">Distributing a hash table</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-chord-ring">The Chord ring</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#nodes-as-part-of-the-hash-space">Nodes as part of the hash space</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#distributing-keys">Distributing keys</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#key-distribution">Key distribution</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../chord_2/">The Chord protocol: locating the right node</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../e-chord/">E-Chord: An implementation of Chord</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/">E-Chord's architecture</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">E-Chord Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Discussion</li>
+      <li class="breadcrumb-item active">The Chord protocol: a distributed hash space</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="the-chord-protocol-a-distributed-hash-space">The Chord protocol: a distributed hash space</h1>
+<p>In this discussion page, we'll focus on the Chord protocol itself. We'll describe what the protocol does and give certain details on how it achieves this.</p>
+<p>At its core, the challenge faced with creating a distributed hash table can be described in two parts:</p>
+<ul>
+<li>How can we distribute the hash table between multiple nodes?</li>
+<li>How can we, from any one node, find the node that contains or should contain a key?</li>
+</ul>
+<p>In this page, we'll mostly restrict ourselves to the former question. For details on the latter, visit the <a href="/discussion/chord_2">next discussion page</a>.</p>
+<h3 id="distributing-a-hash-table">Distributing a hash table</h3>
+<p>To begin with, we'll look at how Chord distributes a hash table to multiple systems. Chord refers to each system in the network as a node. Before anything else, we must recognize the need for node identifiers. If we can't tell nodes apart from each other, we'll find it much harder to determine which node should contain which data.</p>
+<p>In a computer network, each system is identified by its address. As such, we already have a piece of information that is different between nodes.</p>
+<p>The Chord protocol takes this a step further, by creating an additional identifier for each node. We'll call this the node ID. The interesting thing about node IDs is that they exist in the hash space! In other words, we create these IDs by hashing the address of the node. The resulting ID has certain properties, the usefulness of which will become apparent once we look at the way the protocol routes requests.</p>
+<h3 id="the-chord-ring">The Chord ring</h3>
+<p>Imagine taking a hash table's array and connecting the two ends of it. You now have a ring with the same properties as the hash table itself. The only difference is that the last spot lies directly next to the first one.</p>
+<p>This is the idea behind Chord's hash space. To generalize, we won't think of it as a hash table. Instead, think of <em>2<sup>r</sup></em> points, arranged in a circle. Number those points from <em>0</em> to <em>2<sup>r</sup> - 1</em> in clockwise ascending order, starting at any one point. You'll notice point <em>n</em> has neighbors <em>n - 1</em> and <em>n + 1</em>, with the exception of <em>2<sup>r</sup> - 1</em> and <em>0</em>, which have each other as neighbors.</p>
+<p>This virtual ring makes up Chord's hash space and is the basis for all operations in the Chord protocol.</p>
+<h3 id="nodes-as-part-of-the-hash-space">Nodes as part of the hash space</h3>
+<p>To get an ID for a node, we use a hash function on the node's network address. The only requirement for the hash function is that it returns an integer in the range <em>[0, 2<sup>r</sup> - 1]</em>, where <em>r</em> is the number of bits for each ID in the hash space.</p>
+<p>This means the node gets an ID that falls somewhere on the ring, corresponding to one of the points in it. Therefore, the node itself becomes part of the hash space.</p>
+<h3 id="distributing-keys">Distributing keys</h3>
+<p>Now that we have defined our hash space and placed our nodes inside of it, we can move on to determining a split of it between the existing nodes.</p>
+<p>The Chord protocol states that any node is responsible for the range <em>[p + 1, n]</em> on the hash space, where <em>n</em> is the node's ID and <em>p</em> is the first node met if we traverse the ring counter-clockwise from <em>n</em>.</p>
+<p>As a result, whenever we need to insert a new pair into our DHT, we hash the key. If the resulting hash <em>k</em> is in the range <em>[p + 1, n]</em>, we store the pair on node <em>n</em>. More rigorously, we find the range <em>[p + 1, n]</em> into which <em>k</em> belongs and store the pair on <em>n</em>.</p>
+<p>Similarly, if we want to retrieve a pair, we hash the key, get the hash value <em>k</em> and ask node <em>n</em>, such that <em>k</em> ∈ <em>[p + 1, n]</em>.</p>
+<p>In fact, this is the reason the protocol is called Chord. Each node in the network is responsible for a specific chord of the ring.</p>
+<p>With this, we have answered the first question concerning the creation of a DHT.</p>
+<h3 id="key-distribution">Key distribution</h3>
+<p>When using a hash function, we prefer keys to be distributed evenly over the hash space. If this doesn't happen, it can cause collisions that result in operations being slower than expected.</p>
+<p>With Chord, one such instance can be observed when the network consists of few nodes that are close to each other in hash space. Take, for instance, the sample execution from the <a href="/tutorials/adding-data">adding data tutorial</a>:</p>
+<pre><code class="language-text">╔═══════════════╦═══════════════╦══════════╗
+║   Successors  ║  Predecessors ║   Keys   ║
+╠═══════════════╬═══════════════╬══════════╣
+║  2503 -&gt; 8230 ║ 15626 &lt;- 8230 ║  2503: 1 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 8230 -&gt; 15626 ║  8230 &lt;- 2503 ║  8230: 1 ║
+╠═══════════════╬═══════════════╬══════════╣
+║ 15626 -&gt; 2503 ║ 2503 &lt;- 15626 ║ 15626: 7 ║
+╚═══════════════╩═══════════════╩══════════╝
+Total keys: 9
+Stability: 100.00%
+</code></pre>
+<p>In this example, we use a ring with 14-bit IDs. This means there are 16,384 possible IDs in the network. As we saw, every node is responsible for the IDs between the previous node ID and its own node ID.</p>
+<p>Let's calculate which ID ranges each of the nodes in this example is responsible for.</p>
+<ul>
+<li>2503: 15627 to 2503, total (16383 - 15626) + 2504 = 3261 IDs.</li>
+<li>8230: 2504 to 8230, total 8230 - 2503 = 5727 IDs.</li>
+<li>15626: 8231 to 15626, total 15626 - 8230 = 7396 IDs.</li>
+</ul>
+<p>Notice that 15626 is responsible for a much larger number of IDs than the other two. Assuming the hash function is equally likely to output any ID, it is not surprising that more keys are stored in node 15626.</p>
+<p>Yet, 7 as opposed to 1 for each of the others is still more disproportional than expected. If you'd like to get a better example, simply run E-Chord with many nodes and insert a large number of keys. Observe the nodes which are responsible for really small intervals, as opposed to those responsible for large ones. You'll find that the former store a significantly smaller number of IDs than the latter.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../hashing/" class="btn btn-neutral float-left" title="The Hash Table"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../chord_2/" class="btn btn-neutral float-right" title="The Chord protocol: locating the right node">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../hashing/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../chord_2/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
