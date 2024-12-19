@@ -133,7 +133,7 @@
 <h3 id="hash-functions">Hash functions</h3>
 <p>Hashing is performed using hash functions. As described above, hashing is a transformation of an input from some space to another, therefore a function is the tool we're looking for to achieve this.</p>
 <p>A hash function accepts data in some format (for instance, strings) and returns what we call a hash digest, or simply hash. A hash can be an integer, a string, or any other data type, but in its most general form, it is data (bytes).</p>
-<p>Let's look at an example of a simple hash function. We'd like to provide some string of arbitrary size as an input, but get an integer in the range [0-8] as an output.</p>
+<p>Let's look at an example of a simple hash function. We'd like to provide some string of arbitrary size as an input, but get an integer in the range [0, 7] as an output.</p>
 <p>The idea behind this hash function is simple: we'll assign a number to each character in the string, sum up the numbers and get the result of that sum modulo 8. This will result in an integer between 0 and 7.</p>
 <p>For the sake of argument, let's assign 1 to the character <code>a</code> and 0 to every other character. Let's call this new hash function H<sub>1</sub>. We'll now apply our newly created hash function to some inputs:</p>
 <ul>
